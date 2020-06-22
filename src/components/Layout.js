@@ -7,7 +7,7 @@ import NavBar from "./Nav";
 
 const Layout = ({ children, title }) => {
   return (
-    <Container className="red lighten-1" fluid>
+    <Container className="white lighten-1" fluid>
       <Head>
         <title>{title}</title>
         <meta
@@ -19,34 +19,33 @@ const Layout = ({ children, title }) => {
       <Header />
       <NavBar />
       {children}
-      <footer className="indigo lighten-2 bg-primary p-2">
+      <footer className="indigo text-white lighten-2 bg-primary p-2">
         <p>VINCE PRODUCTION</p>
       </footer>
       <style global jsx>
         {`
           html {
             box-sizing: border-box;
+            background: #ccc;
           }
           body {
-            width: 90%;
-            margin: 0.25rem auto 0;
-            padding: 1.2rem;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0;
+            position: relative;
             line-height: 1em;
             font-family: helvetica;
             font-size: 1.2rem;
+
+            background: #fff;
           }
         `}
       </style>
       <style jsx>
         {`
           footer {
-            width: 100%;
-            height: 50px;
-            border-top: 1px solid #eaeaea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            align-content: flex-end;
+            background: blue;
+            padding: 0.5rem;
           }
         `}
       </style>
@@ -61,3 +60,20 @@ export default Layout;
 Layout.defaultProps = {
   title: "Mailtracker",
 };
+/*footer {
+            width: 100%;
+            height: 50px;
+            border-top: 1px solid #eae;
+            display: flex;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+          }
+          footer p {
+            padding: 0.5rem;
+            line-height: 1.6em;
+            text-align: center;
+          } */

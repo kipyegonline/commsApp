@@ -43,6 +43,21 @@ const NavBar = (props) => {
               <NavLink>Contact</NavLink>
             </Link>
           </NavItem>
+          <NavItem>
+            <Link href="/sandbox">
+              <NavLink>Sandbox</NavLink>
+            </Link>
+          </NavItem>
+          <NavItem>
+            <Link href="/users">
+              <NavLink>Users</NavLink>
+            </Link>
+          </NavItem>
+          <NavItem>
+            <Link href="/admin/add-departments">
+              <NavLink>Departments</NavLink>
+            </Link>
+          </NavItem>
         </Nav>
       </Collapse>
     </Navbar>

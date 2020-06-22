@@ -1,4 +1,5 @@
 import { createStore } from "redux";
+import rootReducer from "./rootreducer";
 const devtools = () => {
   let window = globalThis;
   if (window) {
@@ -10,6 +11,6 @@ const devtools = () => {
     return null;
   }
 };
-const rootReducer = (state = { jules: {} }, action) => state;
+
 const store = createStore(rootReducer, devtools());
 export default store;
