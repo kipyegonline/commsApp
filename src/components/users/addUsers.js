@@ -6,10 +6,17 @@ import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import { Close, CloseRounded } from "@material-ui/icons";
+import $ from "jquery";
+import { Grid } from "@material-ui/core";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import PropTypes from "prop-types";
-import $ from "jquery";
+import {
+  getLocal,
+  handleLocalStorage,
+  editLocal,
+} from "../../components/helpers";
 
 const useStyles = makeStyles(
   createStyles({
@@ -21,115 +28,348 @@ const useStyles = makeStyles(
     },
     formControl: {
       display: "flex",
+      flexDirection: "row",
+      margin: ".5rem",
+      width: "100%",
+      "&:input": {
+        width: "100%",
+      },
+    },
+    input: {
+      width: "90%",
     },
   })
 );
 
-function AddUser({ depts }) {
-  const classes = useStyles();
+function AddUser({
+  depts = [],
+  title = "",
+  url = "",
+  Edit = {},
+  updateData = (f) => f,
+  closeEditor = (f) => f,
+}) {
+  const [username, setUsername] = React.useState("");
+  const [usertitle, setUserTitle] = React.useState("");
+  const [useremail, setUserEmail] = React.useState("");
+  const [userphone, setUserPhone] = React.useState("");
+  const [userdept, setuserDept] = React.useState("");
+  const [userpassword, setUserpassword] = React.useState("");
+  const [successmsg, setSuccess] = React.useState("");
+  const [errormsg, setError] = React.useState("");
+  const [editing, setEditing] = React.useState(false);
   const form = React.useRef(null);
+  const btn = React.useRef(null);
+  const classes = useStyles();
+
+  const sendValue = (e) => {
+    const setFunc = eval(e.target.id);
+    if (setFunc === undefined) {
+      return setuserDept(e.target.value);
+    }
+
+    setFunc(e.target.value);
+  };
+  React.useEffect(() => {
+    if (Edit["id"] !== undefined) {
+      setEditing(true);
+
+      setUsername(Edit.username);
+      setUserPhone(Edit.userphone);
+      setUserTitle(Edit.usertitle);
+      setUserEmail(Edit.useremail);
+      setUserpassword(Edit.userpassword);
+      setuserDept(Edit.userdept);
+    }
+  }, [Edit]);
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (username.trim().length < 5 || username.indexOf(" ") < 0) {
+      username.trim().length < 5
+        ? setError("Kindly add  a name")
+        : setError("Enter second name");
+    } else if (usertitle.trim().length < 2) {
+      setError("Enter job title");
+    } else if (userphone.trim().length === 0 || userphone.trim().length < 9) {
+      userphone.trim().length === 0
+        ? setError("Enter users phone number")
+        : setError("Check the phone number");
+    } else if (userdept.trim().length < 1) {
+      setError("Choose Department");
+    } else if (useremail.trim().length < 6) {
+      setError("Please enter an email address");
+    } else if (
+      userpassword.trim().length === 0 ||
+      userpassword.trim().length < 6
+    ) {
+      userpassword.trim().length === 0
+        ? setError("Kindly enter a default  password")
+        : setError("The userpassword should be atleast 6 characters long");
+    } else if (
+      username.trim().length > 6 &&
+      userphone.trim().length > 6 &&
+      usertitle.trim().length > 0 &&
+      useremail.trim().length > 6 &&
+      Number(userdept) > 0 &&
+      userpassword.trim().length > 5
+    ) {
+      // disable button
+      btn.current.disabled = true;
+
+      // send to server
+      /*
+      // remove  this lines on on prod
+      if (!editing) {
+        let uuid = v4();
+        handleLocalStorage(
+          {
+            username,
+            userphone,
+            usertitle,
+            useremail,
+            userdept,
+            userpassword,
+            altId: uuid,
+          },
+          "users"
+        );
+      } else {
+        const editedData = {
+          username,
+          userphone,
+          usertitle,
+          useremail,
+          userdept,
+          userpassword,
+          altId: Edit.altId,
+        };
+        editLocal(Edit, editedData, "users");
+
+        setEditing(false);
+      }
+
+      //dev env end
+*/
+      setError("");
+      //if  adding new user
+      let data = {
+        username: username.trim(),
+        userphone: userphone.trim(),
+        usertitle: usertitle.trim(),
+        useremail: useremail.trim(),
+        userdept: userdept.trim(),
+        userpassword: userpassword.trim(),
+        userAltId: v4(),
+      };
+      //check if user is editing or adding new user, set up data or spread existing data
+
+      editing
+        ? (data = {
+            ...Edit,
+            username: username.trim(),
+            userphone: userphone.trim(),
+            usertitle: usertitle.trim(),
+            useremail: useremail.trim(),
+            userdept: userdept.trim(),
+            userpassword: userpassword.trim(),
+          })
+        : data;
+
+      // also update redux state if we're editing
+      editing && updateData(data, true);
+      // then send to server via jquery ajax, url sent via props
+      $.ajax({
+        url,
+        data,
+        type: "POST",
+        dataType: "json",
+      })
+
+        .then((res) => {
+          // immediately fetch added user from server
+          !editing && updateData({}, false);
+
+          if (res.status === 200) {
+            setSuccess(res.msg);
+            setTimeout(() => {
+              setSuccess("");
+              form.current.reset();
+              btn.current.disabled = false;
+              setUsername("");
+              setUserPhone("");
+              setUserTitle();
+              setUserEmail("");
+              setUserpassword("");
+              setuserDept("");
+              // editor
+              if (editing) {
+                setEditing(false);
+                closeEditor(false);
+              }
+            }, 4000);
+          } else {
+            throw new Error(res.msg);
+          }
+        })
+        .catch((error) => {
+          setError(error.statusText);
+          console.log("err", error);
+          setTimeout(() => setError(""), 3000);
+        });
+    } else {
+      setError("Something is wrong. Check all fields and try again later");
+    }
   };
   return (
     <form
       style={{
-        margin: "1rem",
+        margin: ".5rem auto",
         padding: "1rem",
-        borderRight: "2px solid gray",
+        border: "1px solid red",
+        boxShadow: "-2px -2px 5px red, 2px 2px 5px red",
       }}
       noValidate
       autoComplete="off"
-      className="form"
+      className="form w-100"
       flex="column"
-      spacing={2}
+      spacing={0}
       onSubmit={handleSubmit}
       ref={form}
     >
-      <p>Des form</p>
+      {/*close icons for edit form */}
+      {editing ? (
+        <CloseRounded
+          className="float-right"
+          color="secondary"
+          onClick={() => closeEditor(false)}
+        />
+      ) : (
+        ""
+      )}
+      <p className="text-center">{title}</p>
+
       <FormControl justify="center" className={classes.formControl}>
         <InputLabel>Name</InputLabel>
         <Input
           type="text"
-          onChange={(e) => e}
-          id="username"
-          fullWidth
+          onChange={(e) => sendValue(e)}
+          id="setUsername"
+          className={classes.input}
           placeholder=""
           inputProps={{ "aria-label": "description" }}
+          value={username}
         />
       </FormControl>
 
-      <FormControl className={classes.formControl}>
-        <InputLabel>Department</InputLabel>
-        <Input
-          type="text"
-          onChange={(e) => e}
-          id="userdept"
-          placeholder=""
-          inputProps={{ "aria-label": "description" }}
-        />
-      </FormControl>
       <FormControl className={classes.formControl}>
         <InputLabel>Title</InputLabel>
         <Input
           type="text"
-          onChange={(e) => e}
-          id="usertitle"
+          onChange={(e) => sendValue(e)}
+          id="setUserTitle"
+          className={classes.input}
           placeholder=""
           inputProps={{ "aria-label": "description" }}
+          value={usertitle}
         />
       </FormControl>
-
-      <AddDept depts={depts} />
-      <FormControl className={classes.root}>
-        <InputLabel>Email</InputLabel>
-        <Input
-          type="text"
-          onChange={(e) => e}
-          id="useremail"
-          placeholder=""
-          inputProps={{ "aria-label": "description" }}
-        />
-      </FormControl>
-      <FormControl className={classes.root}>
+      <FormControl className={classes.formControl}>
         <InputLabel>Phone</InputLabel>
         <Input
           type="text"
-          onChange={(e) => e}
-          id="userphone"
+          onChange={(e) => sendValue(e)}
+          id="setUserPhone"
+          className={classes.input}
+          placeholder=""
+          inputProps={{ "aria-label": "description" }}
+          value={userphone}
+        />
+      </FormControl>
+      <FormControl className={classes.formControl}>
+        {" "}
+        <AddDept depts={depts} sendValue={sendValue} />
+      </FormControl>
+
+      <FormControl className={classes.formControl}>
+        <InputLabel>Email</InputLabel>
+        <Input
+          type="email"
+          className={classes.input}
+          onChange={(e) => sendValue(e)}
+          id="setUserEmail"
+          placeholder=""
+          value={useremail}
+          inputProps={{ "aria-label": "description" }}
+        />
+      </FormControl>
+      <FormControl className={classes.formControl}>
+        <InputLabel>Password</InputLabel>
+        <Input
+          type="password"
+          className={classes.input}
+          onChange={(e) => sendValue(e)}
+          id="setUserpassword"
+          value={userpassword}
           placeholder=""
           inputProps={{ "aria-label": "description" }}
         />
       </FormControl>
+      <div className="form-group">
+        <FormHelperText className="text-danger">{errormsg}</FormHelperText>
+        <FormHelperText className="text-success">{successmsg}</FormHelperText>
+      </div>
+
       <Button
         variant="contained"
         size="medium"
         type="submit"
         color="primary"
+        ref={btn}
+        className="btn btn-block mt-3"
         aria-label="move all right"
       >
-        Add User
+        {title}
       </Button>
     </form>
   );
 }
+AddUser.propTypes = {
+  depts: PropTypes.arrayOf(
+    PropTypes.shape({
+      department: PropTypes.string,
+      altName: PropTypes.string,
+      altId: PropTypes.string,
+      id: PropTypes.string,
+    })
+  ),
+  title: PropTypes.string,
+  url: PropTypes.string,
+  Edit: PropTypes.shape({
+    department: PropTypes.string,
+    altName: PropTypes.string,
+    altId: PropTypes.string,
+    id: PropTypes.string,
+  }),
+};
 export default AddUser;
 
-const AddDept = ({ depts }) => {
+export const AddDept = ({ depts = [], sendValue = (f) => f }) => {
   const [dept, setdept] = React.useState("");
+
   const handleChange = (e) => {
-    console.log(e.target.value);
     setdept(e.target.value);
+    sendValue(e);
   };
   return (
     <FormControl variant="filled">
       <InputLabel id="demo-simple-select-filled-label">Department</InputLabel>
       <Select
         labelId="user-department"
-        id="user-department"
+        id="demo-simple-select-filled-label"
         value={dept}
-        style={{ minWidth: 150, margin: 10 }}
-        className="form-control my-3"
+        style={{ minWidth: 200, margin: 10 }}
+        className=" my-3"
         onChange={handleChange}
       >
         <MenuItem value="">
@@ -140,10 +380,7 @@ const AddDept = ({ depts }) => {
             {dep.department}
           </MenuItem>
         ))}
-       
       </Select>
     </FormControl>
   );
 };
-
-

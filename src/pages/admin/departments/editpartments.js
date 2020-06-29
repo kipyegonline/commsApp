@@ -28,8 +28,10 @@ function EditDepartments({ data, fetchDepts }) {
       department,
       altName: nickname,
     };
-    //remove on prod
-    editLocal(data, editedData);
+    /**
+     * //remove on prod
+    editLocal(data, editedData, "depts");
+     */
 
     $.ajax({
       url: "../../server/departments/departments.php?editdept=true",

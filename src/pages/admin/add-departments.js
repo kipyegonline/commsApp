@@ -38,8 +38,8 @@ function AddDepartments() {
     } catch (error) {
       console.log("fetch error");
     }
-    // remove this during production
-    dispatch(actions.addDepts(getLocal()));
+    /** // remove this during production
+    dispatch(actions.addDepts(getLocal("depts"))); */
   };
 
   // use effect
@@ -98,7 +98,7 @@ export const AddUsers = ({ fetchDepts }) => {
         department: dept,
         altName: deptNick,
         altId: v4(),
-      }); */
+      },"depts"); */
       // send to the server via ajax
       $.ajax({
         url: "../server/departments/departments.php?adddept=true",

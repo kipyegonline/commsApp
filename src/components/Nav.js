@@ -33,11 +33,7 @@ const NavBar = (props) => {
               <NavLink>About</NavLink>
             </Link>
           </NavItem>
-          <NavItem>
-            <Link href="/pieview">
-              <NavLink>DM</NavLink>
-            </Link>
-          </NavItem>
+
           <NavItem>
             <Link href="/addstats">
               <NavLink>Contact</NavLink>

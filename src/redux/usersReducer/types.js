@@ -1,0 +1,5 @@
+export const C = {
+  ADD_USERS: "ADD_USERS",
+  EDIT_USER: "EDIT_USER",
+  DELETE_USER: "DELETE_USER",
+};

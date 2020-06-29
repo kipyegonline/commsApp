@@ -65,27 +65,30 @@ export const useMobile = () =>
   document.documentElement.clientWidth <= 480 ? true : false;
 
 //departments
-const creatLocal = () => {};
-export const editLocal = (data, editedData) => {
-  let localdata = JSON.parse(localStorage.getItem("depts"));
+
+export const editLocal = (data, editedData, key) => {
+  let localdata = JSON.parse(localStorage.getItem(key));
   let d = localdata.findIndex((dt) => dt.altId === data.id);
   localdata[d] = editedData;
-  localStorage.setItem("depts", JSON.stringify(localdata));
+  localStorage.setItem(key, JSON.stringify(localdata));
 };
-export const getLocal = () => {
-  let data = JSON.parse(localStorage.getItem("depts"));
-  const payload = data.map((d) => ({ ...d, id: d.altId }));
-  return payload;
+export const getLocal = (key) => {
+  let data = JSON.parse(localStorage.getItem(key));
+  if (data) {
+    const payload = data.map((d) => ({ ...d, id: d.altId }));
+    return payload;
+  }
+  return [];
 };
-export const handleLocalStorage = (inData) => {
-  let data = JSON.parse(localStorage.getItem("depts"));
+export const handleLocalStorage = (inData, key) => {
+  let data = JSON.parse(localStorage.getItem(key));
   if (data) {
     data = [...data, inData];
-    localStorage.setItem("depts", JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
   } else {
-    localStorage.setItem("depts", JSON.stringify([]));
-    let data = JSON.parse(localStorage.getItem("depts"));
+    localStorage.setItem(key, JSON.stringify([]));
+    let data = JSON.parse(localStorage.getItem(key));
     data = [...data, inData];
-    localStorage.setItem("depts", JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
   }
 };

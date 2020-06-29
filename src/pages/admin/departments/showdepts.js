@@ -36,12 +36,16 @@ const ShowDepts = ({ depts, currentPage, perpage, sendValue }) => {
                 <ListItem key={item.id} divider>
                   {i + 1 + currentPage * perpage}.{item.department}{" "}
                   <ListItemIcon className=" ml-5 float-right">
-                    <DeleteIcon onClick={() => handleDelete(item.id)} /> |{" "}
-                    <EditIcon onClick={() => sendValue(item)} />
+                    <DeleteIcon
+                      color="secondary"
+                      onClick={() => handleDelete(item.id)}
+                    />{" "}
+                    |{" "}
+                    <EditIcon color="primary" onClick={() => sendValue(item)} />
                   </ListItemIcon>
                 </ListItem>
               ))
-          : null}
+          : ""}
       </List>
     </>
   );
