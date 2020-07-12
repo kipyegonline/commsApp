@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import { editLocal } from "../../../components/helpers";
 
-function EditDepartments({ data, fetchDepts }) {
+function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
   const form = React.useRef(null);
   const [success, setSuccess] = React.useState("");
   const [errormsg, setError] = React.useState("");
@@ -42,6 +42,7 @@ function EditDepartments({ data, fetchDepts }) {
       .then((res) => {
         if (res.status === 200) {
           fetchDepts();
+          setEditing(false);
           setSuccess(res.msg);
           setTimeout(() => {
             setDept("");

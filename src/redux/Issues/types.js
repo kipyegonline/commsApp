@@ -1,0 +1,5 @@
+export const C = {
+  ADD_ISSUES: "ADD_ISSUES",
+  DELETE_ISSUES: "DELETE_ISSUES",
+  ADD_ISSUE: "ADD_ISSUE",
+};

@@ -19,6 +19,7 @@ import EditDepartments from "./departments/editpartments";
 function AddDepartments() {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [editData, setEditData] = React.useState({});
+  const [isEditing, setEditing] = Reat.useState(false);
   const { departments } = useSelector((state) => ({
     departments: state.departments.departments,
   }));
@@ -39,7 +40,7 @@ function AddDepartments() {
       console.log("fetch error");
     }
     /** // remove this during production
-    dispatch(actions.addDepts(getLocal("depts"))); */
+    dispatch(actions.addDepts(getLocal("depts"))) */
   };
 
   // use effect
@@ -63,6 +64,7 @@ function AddDepartments() {
             sendValue={setEditData}
             currentPage={currentPage}
             perpage={10}
+            setEditing={setEditData} 
           />
           {departments.length > 10 ? (
             <Pagination
@@ -73,7 +75,8 @@ function AddDepartments() {
           ) : null}
         </Col>
         <Col size="2">
-          <EditDepartments data={editData} fetchDepts={fetchDepts} />
+          {(isEditing) ?
+            <EditDepartments data={editData} setEditing={setEditData} fetchDepts={fetchDepts} /> : { ""}}
         </Col>
       </Row>
     </Layout>
@@ -163,6 +166,7 @@ export const AddUsers = ({ fetchDepts }) => {
           onChange={(e) => setDept(e.target.value)}
           id="dept"
           placeholder=""
+          variant="filled"
           inputProps={{ "aria-label": "description" }}
         />
       </FormControl>
@@ -172,6 +176,7 @@ export const AddUsers = ({ fetchDepts }) => {
           id="nickname"
           onChange={(e) => setDeptNick(e.target.value)}
           placeholder=""
+          variant="outlined"
           inputProps={{ "aria-label": "description" }}
         />
       </FormControl>

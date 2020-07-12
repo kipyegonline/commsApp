@@ -10,7 +10,13 @@ import PropTypes, { array } from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import * as actions from "../../../redux/departments/actions";
 
-const ShowDepts = ({ depts, currentPage, perpage, sendValue }) => {
+const ShowDepts = ({
+  depts,
+  currentPage,
+  perpage,
+  sendValue = (f) => f,
+  setEditing = (f) => f,
+}) => {
   const dispatch = useDispatch();
 
   const handleDelete = (id) => {
@@ -25,7 +31,10 @@ const ShowDepts = ({ depts, currentPage, perpage, sendValue }) => {
         .catch((error) => console.log("delete", error));
     }
   };
-
+  const handleEdit = (item) => {
+    sendValue(item);
+    setEditing(true);
+  };
   return (
     <>
       <List>
@@ -41,7 +50,10 @@ const ShowDepts = ({ depts, currentPage, perpage, sendValue }) => {
                       onClick={() => handleDelete(item.id)}
                     />{" "}
                     |{" "}
-                    <EditIcon color="primary" onClick={() => sendValue(item)} />
+                    <EditIcon
+                      color="primary"
+                      onClick={() => handleEdit(item)}
+                    />
                   </ListItemIcon>
                 </ListItem>
               ))

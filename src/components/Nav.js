@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import Router from "next/router";
 import PropTypes from "prop-types";
 import {
   Collapse,
@@ -10,6 +11,7 @@ import {
   NavItem,
   NavLink,
 } from "reactstrap";
+import Button from "@material-ui/core/Button";
 import styles from "./css/nav.module.css";
 
 const NavBar = (props) => {
@@ -54,8 +56,33 @@ const NavBar = (props) => {
               <NavLink>Departments</NavLink>
             </Link>
           </NavItem>
+          <NavItem>
+            <Link href="/issues">
+              <NavLink>Issues</NavLink>
+            </Link>
+          </NavItem>
+          <NavItem>
+            <Button
+              color="secondary"
+              size="medium"
+              onClick={() => Router.push("/add-post")}
+              variant="contained"
+            >
+              Add Post
+            </Button>
+          </NavItem>
         </Nav>
       </Collapse>
+      <style jsx>
+        {`
+          .add-post {
+            color: black;
+          }
+          .add-post:hover {
+            text-decoration: none;
+          }
+        `}
+      </style>
     </Navbar>
   );
 };

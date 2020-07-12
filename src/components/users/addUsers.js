@@ -17,6 +17,7 @@ import {
   handleLocalStorage,
   editLocal,
 } from "../../components/helpers";
+import { FormText } from "reactstrap";
 
 const useStyles = makeStyles(
   createStyles({
@@ -207,14 +208,15 @@ function AddUser({
                 setEditing(false);
                 closeEditor(false);
               }
-            }, 4000);
+            }, 2000);
           } else {
             throw new Error(res.msg);
           }
         })
         .catch((error) => {
-          setError(error.statusText);
+          setError(error.message);
           console.log("err", error);
+          btn.current.disabled = false;
           setTimeout(() => setError(""), 3000);
         });
     } else {
@@ -288,6 +290,7 @@ function AddUser({
       </FormControl>
       <FormControl className={classes.formControl}>
         {" "}
+        <FormText>{Edit.department || ""}</FormText>
         <AddDept depts={depts} sendValue={sendValue} />
       </FormControl>
 

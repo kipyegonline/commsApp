@@ -8,7 +8,7 @@ $department=$_POST["department"];
 $altName=$_POST['altName'];
 $altId=$_POST["altId"];
 //validate
-if(!empty($department) && !empty($altName)){
+if(!empty($department) || !empty($altName)){
    $dept->insertDepartMents($department,$altName,$altId);
 
 

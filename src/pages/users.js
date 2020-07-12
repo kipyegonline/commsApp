@@ -1,6 +1,14 @@
 import React from "react";
 import { Row, Col } from "reactstrap";
-import { Grid, GridList } from "@material-ui/core";
+import {
+  Grid,
+  GridList,
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -17,7 +25,7 @@ const useStyles = makeStyles({
     background: "#fff",
     padding: ".75rem",
     margin: ".75rem auto",
-    width: "32%",
+    width: "30%",
 
     "@media (max-width:480px)": {
       background: "#fff",
@@ -34,6 +42,7 @@ const useStyles = makeStyles({
     },
   },
   container: {
+    border: "1px solid yellow",
     width: "100%",
   },
 });
@@ -43,13 +52,38 @@ function Users() {
   const dispatch = useDispatch();
   const [Edit, setEdit] = React.useState({});
   const [editor, setEditor] = React.useState(false);
+  const [tableUsers, setTableUsers] = React.useState([]);
+
+  const fetchStats = (url, callback) => {
+    axios
+      .get(url)
+      .then((res) => {
+        callback(res.data);
+      })
+      .catch((error) => console.log("stats err", error));
+  };
 
   React.useEffect(() => {
     // fetch data
-
-    /**
-     // remove on prod
-    dispatch(actions.addUser(getLocal("users"))); */
+    /*
+    // remove on prod
+    dispatch(
+      actions.addUser(
+        getLocal("users").map((item) => ({
+          ...item,
+          selected: false,
+        }))
+      )
+    );
+    dispatch(
+      depts.addDepts(
+        getLocal("depts").map((item) => ({
+          ...item,
+          selected: false,
+        }))
+      )
+    );
+*/
 
     // get the departments and users
     Promise.all([
@@ -59,10 +93,13 @@ function Users() {
       fetchData("./server/users/users.php?fetchusers=true").then((res) =>
         dispatch(actions.addUser(res))
       ),
+      fetchStats(
+        "../server/users/users.php?fetchuserdeptstats=true",
+        setTableUsers
+      ),
     ]);
-
-    console.log("department on users");
   }, []);
+
   // hit the redux store
   const { departments, users } = useSelector((state) => ({
     departments: state.departments.departments,
@@ -71,7 +108,6 @@ function Users() {
   // events
 
   const handleDelete = (id) => {
-    console.log(id);
     if (confirm("Delete user?")) {
       dispatch(actions.deleteUser(id));
       fetch(`./server/users/users.php?deleteuser=true&userId=${id}`)
@@ -84,7 +120,7 @@ function Users() {
   };
   // edit form,selected data for edit
   const handleEdit = (editId) => {
-    let selectedUser = users.find((user) => user.id === editId);
+    const selectedUser = users.find((user) => user.id === editId);
     if (selectedUser) {
       setEdit(selectedUser);
       setEditor(true);
@@ -96,6 +132,10 @@ function Users() {
       dispatch(actions.editUser(data));
     } else {
       console.log("new user added");
+      // fetch added user
+      fetchData("./server/users/users.php?fetchusers=true").then((res) =>
+        dispatch(actions.addUser(res))
+      );
     }
   };
   // get selected dept
@@ -114,41 +154,28 @@ function Users() {
     <Layout>
       <Grid
         container
-        className={classes.container}
-        direction="row"
-        spacing={0}
-        justify="space-evenly"
+        spacing={1}
+        className={` mx-auto`}
         alignItems="flex-start"
-        alignContent="flex-start"
-        item
+        direction="row-reverse"
+        justify="center"
+        grow={1}
       >
-        <GridList
-          spacing={3}
-          className={`${classes.root} mt-1`}
-          component="div"
-        >
+        <Grid item xs className={`${classes.root} mt-1`} component="div">
           <AddUser
             depts={departments}
             title="Add User"
             url="./server/users/users.php?adduser=true"
           />
-        </GridList>
-        <GridList
-          spacing={0}
-          className={`${classes.root} my-1`}
-          component="div"
-        >
+        </Grid>
+        <Grid item xs className={`${classes.root} my-1`} component="div">
           <ShowUsers
             users={users}
             deleteKey={handleDelete}
             editKey={handleEdit}
           />
-        </GridList>
-        <GridList
-          spacing={0}
-          className={`${classes.root} mb-2`}
-          component="div"
-        >
+        </Grid>
+        <Grid item xs className={`${classes.root} mb-2`} component="div">
           <AddDept depts={departments} sendValue={getSelected} />
           {editor ? (
             <AddUser
@@ -160,9 +187,41 @@ function Users() {
               updateData={editData}
             />
           ) : null}
-        </GridList>
+          {tableUsers.length > 0 ? (
+            <TableUsers users={tableUsers} depts={departments} />
+          ) : (
+            <p>Loading stats</p>
+          )}
+        </Grid>
       </Grid>
     </Layout>
   );
 }
 export default Users;
+
+const TableUsers = ({ users = [], depts = [] }) => (
+  <Table>
+    <caption>
+      {users.length} members from
+      {depts.length} departments
+    </caption>
+    <TableHead>
+      <TableRow>
+        <TableCell scope="col">Department</TableCell>
+        <TableCell scope="col">Members</TableCell>
+      </TableRow>
+    </TableHead>
+
+    <TableBody>
+      {users.map((user) => (
+        <UserTable key={user.dept} {...user} />
+      ))}
+    </TableBody>
+  </Table>
+);
+const UserTable = ({ dept = "", members = "" }) => (
+  <TableRow>
+    <TableCell>{dept}</TableCell>
+    <TableCell>{members}</TableCell>
+  </TableRow>
+);

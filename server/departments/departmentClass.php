@@ -56,7 +56,7 @@ public function deleteItem($id){
      
     $stmt=$this->connection->exec($sql);
     if($stmt){
-          echo sendFeedBack(200,"Added successfully");
+          echo sendFeedBack(200,"Deleted successfully");
         /*
         $rowCount=$stmt->rowCount();
     if($rowCount>0){

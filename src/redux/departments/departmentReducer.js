@@ -1,4 +1,5 @@
 import { C } from "./types";
+
 const initState = {
   departments: [],
   error: false,
@@ -18,7 +19,25 @@ function departmentReducer(state = initState, action) {
         ),
       };
     case C.EDIT_DEPARTMENT:
+      /// fix this part
       return state;
+    case C.SELECTED_DEPT:
+      return {
+        ...state,
+        departments: state.departments.map((dept) =>
+          dept.id === action.payload
+            ? { ...dept, selected: !dept.selected }
+            : { ...dept }
+        ),
+      };
+    case C.RESET_SELECTED_DEPT:
+      return {
+        ...state,
+        departments: state.departments.map((dept) => ({
+          ...dept,
+          selected: false,
+        })),
+      };
     default:
       return state;
   }
