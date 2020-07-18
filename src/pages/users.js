@@ -65,7 +65,7 @@ function Users() {
 
   React.useEffect(() => {
     // fetch data
-    /*
+
     // remove on prod
     dispatch(
       actions.addUser(
@@ -83,21 +83,22 @@ function Users() {
         }))
       )
     );
-*/
+    /**/
 
     // get the departments and users
-    Promise.all([
-      fetchData(
-        "../server/departments/departments.php?fetchdepts=true"
-      ).then((res) => dispatch(depts.addDepts(res))),
-      fetchData("./server/users/users.php?fetchusers=true").then((res) =>
-        dispatch(actions.addUser(res))
-      ),
-      fetchStats(
-        "../server/users/users.php?fetchuserdeptstats=true",
-        setTableUsers
-      ),
-    ]);
+    /*
+                          Promise.all([
+                            fetchData(
+                              "../server/departments/departments.php?fetchdepts=true"
+                            ).then((res) => dispatch(depts.addDepts(res))),
+                            fetchData(
+                              "./server/users/users.php?fetchusers=true"
+                            ).then((res) => dispatch(actions.addUser(res))),
+                            fetchStats(
+                              "../server/users/users.php?fetchuserdeptstats=true",
+                              setTableUsers
+                            ),
+                          ]); */
   }, []);
 
   // hit the redux store
@@ -128,7 +129,7 @@ function Users() {
   };
   // send edited data to redux store fetch new user
   const editData = (data, status) => {
-    if (status) {
+    if (status === true) {
       dispatch(actions.editUser(data));
     } else {
       console.log("new user added");
@@ -188,7 +189,7 @@ function Users() {
             />
           ) : null}
           {tableUsers.length > 0 ? (
-            <TableUsers users={tableUsers} depts={departments} />
+            <TableUsers users={users} depts={departments} />
           ) : (
             <p>Loading stats</p>
           )}

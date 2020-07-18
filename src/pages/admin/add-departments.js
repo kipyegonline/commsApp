@@ -4,6 +4,7 @@ import Input from "@material-ui/core/Input";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
@@ -16,10 +17,17 @@ import * as actions from "../../redux/departments/actions";
 import { getLocal, handleLocalStorage } from "../../components/helpers";
 import EditDepartments from "./departments/editpartments";
 
+const useStyles = makeStyles({
+  grid: {
+    minWidth: 360,
+    width: "32%",
+  },
+});
 function AddDepartments() {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [editData, setEditData] = React.useState({});
-  const [isEditing, setEditing] = Reat.useState(false);
+  const [isEditing, setEditing] = React.useState(false);
+  const classes = useStyles();
   const { departments } = useSelector((state) => ({
     departments: state.departments.departments,
   }));
@@ -50,11 +58,17 @@ function AddDepartments() {
 
   return (
     <Layout>
-      <Row className="jumbotron">
-        <Col size="4" className="card">
+      <Grid
+        className="jumbotron"
+        spacing={3}
+        justify="center"
+        alignItems="flex-start"
+        container
+      >
+        <Grid item className={`card ${classes.grid} `} xs>
           <AddUsers fetchDepts={fetchDepts} />
-        </Col>
-        <Col size="8">
+        </Grid>
+        <Grid item className={`card ${classes.grid}`} xs>
           <p className="text-center alert alert-primary my-2">
             {" "}
             {departments.length} Departments
@@ -64,7 +78,7 @@ function AddDepartments() {
             sendValue={setEditData}
             currentPage={currentPage}
             perpage={10}
-            setEditing={setEditData} 
+            setEditing={setEditing}
           />
           {departments.length > 10 ? (
             <Pagination
@@ -73,12 +87,17 @@ function AddDepartments() {
               setCurrentPage={setCurrentPage}
             />
           ) : null}
-        </Col>
-        <Col size="2">
-          {(isEditing) ?
-            <EditDepartments data={editData} setEditing={setEditData} fetchDepts={fetchDepts} /> : { ""}}
-        </Col>
-      </Row>
+        </Grid>
+        <Grid item className={`card ${classes.grid} my-2`} xs>
+          {isEditing ? (
+            <EditDepartments
+              data={editData}
+              setEditing={setEditData}
+              fetchDepts={fetchDepts}
+            />
+          ) : null}
+        </Grid>
+      </Grid>
     </Layout>
   );
 }

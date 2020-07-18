@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Router from "next/router";
+import NProgress from "nprogress";
 import PropTypes from "prop-types";
+import { Fab } from "@material-ui/core";
+import ADDICON from "@material-ui/icons/Add";
+
 import {
   Collapse,
   Navbar,
@@ -14,6 +18,13 @@ import {
 import Button from "@material-ui/core/Button";
 import styles from "./css/nav.module.css";
 
+Router.onRouteChangeStart = () => {
+  NProgress.start();
+};
+Router.onRouteChangeComplete = () => {
+  NProgress.done();
+};
+Router.onRouteError = () => NProgress.done();
 const NavBar = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -28,6 +39,11 @@ const NavBar = (props) => {
           <NavItem>
             <Link href="/">
               <NavLink>Home</NavLink>
+            </Link>
+          </NavItem>
+          <NavItem>
+            <Link href="/posts">
+              <NavLink>My posts</NavLink>
             </Link>
           </NavItem>
           <NavItem>
@@ -64,7 +80,7 @@ const NavBar = (props) => {
           <NavItem>
             <Button
               color="secondary"
-              size="medium"
+              size="small"
               onClick={() => Router.push("/add-post")}
               variant="contained"
             >

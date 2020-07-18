@@ -19,6 +19,7 @@ import {
 } from "@material-ui/core";
 import { Twitter, Facebook, Delete } from "@material-ui/icons";
 import Layout from "../components/Layout";
+import { AddDept } from "../components/users/addUsers";
 import * as handleIssues from "../redux/Issues/actions";
 
 const useclass = makeStyles({
@@ -33,9 +34,11 @@ const useclass = makeStyles({
 function Issues() {
   const dispatch = useDispatch();
   const classes = useclass();
+  const [dept, setDept] = React.useState("");
   // redux
-  const { issues: listIssues } = useSelector((state) => ({
+  const { issues: listIssues, departments } = useSelector((state) => ({
     issues: state.issues.issues,
+    departments: state.departments.departments,
   }));
   // fetch issues from server
   const fetchIssues = () => {
@@ -48,9 +51,16 @@ function Issues() {
   const getValues = (issue) => dispatch(handleIssues.addIssue(issue));
   // delete issue
   const deleteValue = (id) => dispatch(handleIssues.deleteIssues(id));
-  React.useState(() => {
+  React.useEffect(() => {
     fetchIssues();
-  });
+  }, []);
+  const getSelected = (e) => {
+    if (e.target) {
+      setDept(e.target.value);
+    } else {
+      setDept("");
+    }
+  };
 
   return (
     <Layout>
@@ -62,8 +72,18 @@ function Issues() {
         direction="row"
       >
         <Grid cols={5} item component="div">
-          <AddIssues sendValue={getValues} />
+          <AddDept
+            depts={departments}
+            sendValue={getSelected}
+            userdept={dept}
+          />
+          <AddIssues
+            sendValue={getValues}
+            userdept={dept}
+            sendSelected={getSelected}
+          />
         </Grid>
+
         <Grid item>
           <IssueList issues={listIssues} deleteId={deleteValue} />
         </Grid>
@@ -71,7 +91,11 @@ function Issues() {
     </Layout>
   );
 }
-const AddIssues = ({ sendValue }) => {
+const AddIssues = ({
+  sendValue = (f) => f,
+  userdept = 0,
+  sendSelected = (f) => f,
+}) => {
   const [issue, setIssue] = React.useState("");
   const [errormsg, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
@@ -81,16 +105,27 @@ const AddIssues = ({ sendValue }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (issue.trimRight().length > 0) {
+    if (userdept.length < 1) {
+      setError("Please choose department");
+      setTimeout(() => setError(""), 3000);
+    } else if (issue.trimRight().length < 5) {
+      setError("Please type the issue");
+      setTimeout(() => setError(""), 3000);
+    } else if (issue.trimRight().length > 4 && userdept.length > 0) {
       btn.current.disabled = true;
-      sendValue({ issue, altId: v4() });
+      sendValue({ issue, altId: v4(), userdept, id: v4() });
+      {
+        /* remove id during prod*/
+      }
+      sendSelected("");
       $.ajax({
         url: "./server/issues/issues.php?addissue=true",
-        data: { issue, altId: v4() },
+        data: { issue, altId: v4(), userdept },
         type: "POST",
         dataType: "json",
       })
         .then((res) => {
+          sendSelected("");
           if (res.status === 200) {
             setSuccess(res.msg);
             setIssue("");
@@ -98,7 +133,7 @@ const AddIssues = ({ sendValue }) => {
               form.current.reset();
               setSuccess("");
               btn.current.disabled = false;
-            }, 3000);
+            }, 2000);
           } else {
             throw new Error(res.msg);
           }

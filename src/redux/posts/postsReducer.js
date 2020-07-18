@@ -1,3 +1,5 @@
+import { C } from "./types";
+
 const initState = {
   posts: [],
   post: {},
@@ -5,6 +7,19 @@ const initState = {
 };
 
 function postsReducer(state = initState, action) {
-  return state;
+  switch (action.type) {
+    case C.ADD_POSTS:
+      return { ...state, posts: action.payload };
+
+    case C.SET_TICKS:
+      return {
+        ...state,
+        posts: state.posts.map((post) =>
+          post.id === action.payload ? { ...post, seen: true } : { ...post }
+        ),
+      };
+    default:
+      return state;
+  }
 }
 export default postsReducer;

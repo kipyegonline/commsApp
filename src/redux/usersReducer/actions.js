@@ -8,11 +8,20 @@ export const addselectedUsers = (payload) => ({
   type: C.ADD_SELECTED_USERS,
   payload,
 });
+export const removeselectedUsers = (payload) => ({
+  type: C.UNSELECTED_USER,
+  payload,
+});
 export const removeSelectedUsers = (payload) => ({
   type: C.DELETE_SELECTED_USERS,
   payload,
 });
 export const resetSelected = (payload) => ({
   type: C.RESET_SELECTED_USERS,
+  payload,
+});
+
+export const addUserdept = (payload) => ({
+  type: C.USER_DEPTS,
   payload,
 });

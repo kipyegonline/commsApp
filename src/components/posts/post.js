@@ -11,20 +11,36 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes, { array } from "prop-types";
+
 // import Pagination from "@material-ui/lab/Pagination";
 
 const useStyles = makeStyles({
   formControl: { width: "80%", margin: ".5rem auto" },
 });
-function DisplayIssues({ issues = [], getIssue = (f) => f, issue = "" }) {
+function DisplayIssues({
+  issues = [],
+  getIssue = (f) => f,
+  issue = "",
+  multiple = false,
+}) {
   const [errorInt, setErrorInt] = React.useState(true);
+
   const classes = useStyles();
   const handleChange = (e) => {
-    if (e.target.value.length > 0) {
-      getIssue(e.target.value);
-      setErrorInt(false);
+    if (multiple) {
+      if (!e.target.value.includes("")) {
+        getIssue(e.target.value);
+        setErrorInt(false);
+      } else {
+      }
+    } else {
+      if (e.target.value.length > 0) {
+        getIssue(e.target.value);
+        setErrorInt(false);
+      }
     }
   };
+
   return (
     <FormControl className={classes.formControl}>
       <InputLabel id="issues-at-hand">Select Issue</InputLabel>
@@ -34,13 +50,16 @@ function DisplayIssues({ issues = [], getIssue = (f) => f, issue = "" }) {
         value={issue}
         variant="filled"
         error={errorInt}
+        multiple={multiple}
         onChange={handleChange}
       >
         <MenuItem value="">
           <em>Select Issue</em>
         </MenuItem>
         {issues.map((item) => (
-          <MenuItem key={item.altId} value={item.altId}>
+          <MenuItem key={item.altId} value={item.id}>
+            {" "}
+            {/**Remove alt id suring prod */}
             {item.issue}
           </MenuItem>
         ))}
@@ -105,3 +124,45 @@ ShowUsers.propTypes = {
   users: PropTypes.arrayOf(PropTypes.object).isRequired,
   getUser: PropTypes.func.isRequired,
 };
+
+export function DisplayUsers({
+  users = [],
+  getUser = (f) => f,
+  user = "",
+  multiple = false,
+}) {
+  const [errorInt, setErrorInt] = React.useState(true);
+
+  const classes = useStyles();
+  const handleChange = (e) => {
+    if (e.target.value.length > 0) {
+      getUser(e.target.value);
+
+      setErrorInt(false);
+    }
+  };
+
+  return (
+    <FormControl className={classes.formControl}>
+      <InputLabel id="user-at-hand">Select Colleauge</InputLabel>
+      <Select
+        labelId="user-at-hand"
+        id="issues-at-hand"
+        value={user}
+        variant="filled"
+        error={errorInt}
+        multiple={multiple}
+        onChange={handleChange}
+      >
+        <MenuItem value="">
+          <em>Select Colleauge</em>
+        </MenuItem>
+        {users.map((item) => (
+          <MenuItem key={item.altId} value={item.id}>
+            {item.username}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+}

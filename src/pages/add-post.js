@@ -22,9 +22,11 @@ import { InputGroup } from "reactstrap";
 import DisplayIssues, { ShowDepts, ShowUsers } from "../components/posts/post";
 import * as useractions from "../redux/usersReducer/actions";
 import * as userdepts from "../redux/departments/actions";
+import * as issueactions from "../redux/Issues/actions";
+import { getLocal, handleLocalStorage } from "../components/helpers";
 
 const useStyles = makeStyles({
-  grid: { width: "100%" },
+  grid: { minWidth: 300 },
   root: {
     width: "90%",
     margin: ".5rem auto",
@@ -52,7 +54,7 @@ function AddPost() {
   const [clientEmail, setClientEmail] = React.useState("");
   const [clientOrg, setClientOrg] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [issue, setIssue] = React.useState("");
+  const [issue, setIssue] = React.useState([]);
   const [handler, setHandler] = React.useState([]);
   const [subject, setSubject] = React.useState("");
   const [clientDept, setClientDept] = React.useState([]);
@@ -63,18 +65,49 @@ function AddPost() {
 
   // hit redux store
 
-  const { issues, selectedUsers: users, departments } = useSelector(
-    (state) => ({
-      issues: state.issues.issues,
-      selectedUsers: state.users.selectedUsers,
-      departments: state.departments.departments,
-    })
-  );
+  const {
+    issues,
+    selectedUsers: users,
+    departments,
+    selectedIssues,
+  } = useSelector((state) => ({
+    issues: state.issues.issues,
+    selectedUsers: state.users.selectedUsers,
+    departments: state.departments.departments,
+    selectedIssues: state.issues.selectedIssues,
+  }));
   const dispatch = useDispatch();
   // set classes and date
   const classes = useStyles();
   const today = new Date();
+  // fetch users from clicked department
+  const fetchSelectedUsers = (id) => {
+    fetch(`./server/users/users.php?fetchSelectedUsers=true&id=${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.length > 0) {
+          // add object property selected of false
+          return data.map((user) => ({ ...user, selected: false }));
+        }
+        throw new Error("No payload");
+      })
+      // send to redux
+      .then((data) => dispatch(useractions.addselectedUsers(data)))
+      .catch((error) => console.log("fetch users error", error));
+  };
+  // fetch selected issues according to dept
 
+  const fetchSelectedIssues = (id) => {
+    fetch(`./server/issues/issues.php?fetchSelectedIssue=true&id=${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.length > 0) {
+          dispatch(issueactions.addFetched(data));
+        }
+        throw new Error("No payload");
+      })
+      .catch((error) => console.log("fetch issue error", error));
+  };
   // handle  user actions
   const handleUser = (user) => {
     // check if users already clicked
@@ -111,18 +144,39 @@ function AddPost() {
     // send to redux store
     const { selected } = data;
     dispatch(userdepts.editSelected(data.id));
-    // fetch users from selected department or delete
-    selected
-      ? dispatch(useractions.removeSelectedUsers(data.id))
-      : fetchSelectedUsers(data.id);
+
+    // fetch users from selected department or delete department and selected users
+    if (selected) {
+      dispatch(useractions.removeSelectedUsers(data.id));
+      dispatch(issueactions.removeFetched(data.id));
+      // remove users already handler array on component
+      setHandler(handler.filter((handle) => handle.userdept !== data.id));
+    } else {
+      fetchSelectedUsers(data.id);
+      fetchSelectedIssues(data.id);
+    }
   };
 
-  const fetchSelectedUsers = (id) => {
-    fetch(`./server/users/users.php?fetchSelectedUsers=true&id=${id}`)
-      .then((res) => res.json())
-      .then((data) => data.map((user) => ({ ...user, selected: false })))
-      .then((data) => dispatch(useractions.addselectedUsers(data)))
-      .catch((error) => console.log("fetch error", error));
+  const handleIssue = (incomingIssue) => {
+    if (incomingIssue.length > issue.length) {
+      const theItem = incomingIssue[incomingIssue.length - 1];
+      const theIssue = issues.find((item) => item.id === theItem);
+
+      if (theIssue) {
+        //send object to to redux
+
+        dispatch(issueactions.addSelected(theIssue));
+      }
+    } else {
+      issue.forEach((item) => {
+        if (incomingIssue.indexOf(item) < 0) {
+          //remove item from redux
+          dispatch(issueactions.removeSelected(item));
+        }
+      });
+    }
+    console.log("curt", issue, "ing", incomingIssue.length, incomingIssue);
+    setIssue(incomingIssue);
   };
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -165,6 +219,8 @@ function AddPost() {
         addedon: new Date().toLocaleString(),
       };
       console.log("dara", data);
+      //Remove on prod
+      handleLocalStorage(data, "posts");
       $.ajax({
         url: "./server/posts/posts.php?addposts=true",
         dataType: "json",
@@ -193,7 +249,7 @@ function AddPost() {
               setSubject("");
               setClientDept([]);
               form.current.reset();
-            }, 5000);
+            }, 2000);
           } else {
             throw new Error(res.msg);
           }
@@ -208,7 +264,7 @@ function AddPost() {
       );
     }
   };
-
+  console.log("issueue", selectedIssues);
   return (
     <Layout>
       <Box className={classes.root}>
@@ -271,9 +327,10 @@ function AddPost() {
               </FormControl>
               {/* issues list */}
               <DisplayIssues
-                getIssue={setIssue}
+                getIssue={handleIssue}
                 issue={issue}
                 issues={issues}
+                multiple
               />
               {/** item 4 */}
 
@@ -323,8 +380,6 @@ function AddPost() {
               )}
             </Grid>
           </Grid>
-
-          <Box></Box>
         </form>
       </Box>
     </Layout>

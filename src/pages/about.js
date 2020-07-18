@@ -1,42 +1,33 @@
 import React from "react";
-import Link from "next/link";
-import * as d3 from "d3";
-import { Container, Jumbotron, Row, Col, Button } from "reactstrap";
+import { makeStyles } from "@material-ui/core/styles";
+import Badge from "@material-ui/core/Badge";
+import MailIcon from "@material-ui/icons/Mail";
 import Layout from "../components/Layout";
 
-const About = (props) => {
-  console.log("props", props);
+const useStyles = makeStyles((theme) => ({
+  root: {
+    "& > *": {
+      margin: theme.spacing(1),
+    },
+  },
+}));
+
+export default function About() {
+  const classes = useStyles();
+
   return (
-    <Layout title="about">
-      <Jumbotron>
-        <Row className="main">
-          <Col lg="9" md="8" sm="12" className="mb-2">
-            <ul>
-              <li>
-                <Link as={`/post`} href={`/post?title=${"Jules"}`}>
-                  <a>Article 1</a>
-                </Link>
-              </li>
-              <li>
-                <Link as={`/post`} href={`/post?title=${"Sheila"}`}>
-                  <a>Article 2</a>
-                </Link>
-              </li>
-            </ul>
-          </Col>
-          <Col lg="3" md="4" sm="12" className="mb-2">
-            Loading table
-          </Col>
-        </Row>
-      </Jumbotron>
-      <style jsx>
-        {`
-          .main {
-            background: deepskyblue;
-          }
-        `}
-      </style>
+    <Layout>
+      <div className={classes.root}>
+        <Badge badgeContent={4} color="primary">
+          <MailIcon />
+        </Badge>
+        <Badge badgeContent={4} color="secondary">
+          <MailIcon />
+        </Badge>
+        <Badge badgeContent={4} color="error">
+          <MailIcon />
+        </Badge>
+      </div>
     </Layout>
   );
-};
-export default About;
+}

@@ -188,15 +188,17 @@ function AddUser({
       })
 
         .then((res) => {
+          console.log("user added 1", res);
           // immediately fetch added user from server
-          !editing && updateData({}, false);
+          editing === false && updateData({}, false);
 
           if (res.status === 200) {
             setSuccess(res.msg);
+            btn.current.disabled = false;
+            form.current.reset();
             setTimeout(() => {
               setSuccess("");
-              form.current.reset();
-              btn.current.disabled = false;
+
               setUsername("");
               setUserPhone("");
               setUserTitle();
@@ -291,7 +293,7 @@ function AddUser({
       <FormControl className={classes.formControl}>
         {" "}
         <FormText>{Edit.department || ""}</FormText>
-        <AddDept depts={depts} sendValue={sendValue} />
+        <AddDept depts={depts} userdept={userdept} sendValue={sendValue} />
       </FormControl>
 
       <FormControl className={classes.formControl}>
@@ -357,11 +359,18 @@ AddUser.propTypes = {
 };
 export default AddUser;
 
-export const AddDept = ({ depts = [], sendValue = (f) => f }) => {
-  const [dept, setdept] = React.useState("");
+export const AddDept = ({
+  depts = [],
+  sendValue = (f) => f,
+  userdept = "",
+}) => {
+  const [dept, setdept] = React.useState(userdept);
+  React.useEffect(() => {
+    setdept(userdept);
+  }, [userdept]);
 
   const handleChange = (e) => {
-    setdept(e.target.value);
+    //setdept(e.target.value);
     sendValue(e);
   };
   return (

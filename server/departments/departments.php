@@ -36,8 +36,8 @@ if(isset($_GET["editdept"]) && $_GET["editdept"]==true){
 $altName=$_POST['altName'];
 $id=$_POST["id"];
 
-   if(empty($department)){
-  echo sendFeedBack(201,"Click department to edit");
+   if(empty($id) || empty($department)){
+  echo sendFeedBack(201,"Click on icon  near department to edit");
    }
    else{
       $altName= empty($altName)? $department :$altName;
