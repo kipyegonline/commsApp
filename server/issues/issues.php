@@ -5,13 +5,15 @@ $res=[];
 if(isset($_GET["addissue"]) && $_GET["addissue"]=="true"){
 $issue=$_POST["issue"];
 $altId=$_POST["altId"];
-if(empty($issue) || empty($altId)){
+$userdept=$_POST["userdept"];
+
+if(empty($issue) || empty($userdept)){
      $res["status"]=201;
     $res["msg"]="Arguments not seen";
     echo json_encode($res);
 
 }else{
-$sql="INSERT INTO comms_issues (issue,altId) VALUES('$issue','$altId')";
+$sql="INSERT INTO comms_issues (issue,altId, userdept) VALUES('$issue','$altId', '$userdept')";
 $connection->exec($sql);
 $id=$connection->lastInsertId();
 if($id>0){
@@ -42,6 +44,26 @@ if(isset($_GET["fetchissues"]) && $_GET["fetchissues"]=="true"){
     }
     
 }
+if(isset($_GET["fetchSelectedIssue"]) && $_GET["fetchSelectedIssue"]=="true"){
+    $id=$_GET["id"];
+    if($id){
+
+ $sql="SELECT * FROM comms_issues WHERE userdept=$id ORDER BY issue";
+    $stmt=$connection->query($sql);
+    if($stmt){
+        $data=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($data)>0){
+            echo json_encode($data);
+        }else{
+            echo json_encode([]);
+        }
+    }
+    }
+
+   
+    
+}
+
 if(isset($_GET["deleteissue"]) && $_GET["deleteissue"]=="true"){
     $id=$_GET["id"];
     if($id){

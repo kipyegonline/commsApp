@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Input,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes, { array } from "prop-types";
@@ -17,6 +18,10 @@ import PropTypes, { array } from "prop-types";
 const useStyles = makeStyles({
   formControl: { width: "80%", margin: ".5rem auto" },
 });
+
+//mock auth
+const { uuid, userdept } = { uuid: 20, userdept: 5 };
+
 function DisplayIssues({
   issues = [],
   getIssue = (f) => f,
@@ -99,24 +104,26 @@ export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
 export const ShowUsers = ({ users = [], getUser = (f) => f }) => {
   return (
     <List dense>
-      {users.map((user, i) => (
-        <ListItem
-          key={user.id}
-          alignItems="center"
-          divider
-          button
-          onClick={() => getUser(user)}
-          className={user.selected ? "bg-info text-white" : "bg-light"}
-          variant="contained"
-          color="secondary"
-        >
-          <small className="mr-2">{i + 1}. </small>{" "}
-          <ListItemText
-            primary={user.username}
-            secondary={user.usertitle + " - " + user.userphone}
-          />
-        </ListItem>
-      ))}
+      {users
+        .filter((user) => +user.id !== uuid)
+        .map((user, i) => (
+          <ListItem
+            key={user.id}
+            alignItems="center"
+            divider
+            button
+            onClick={() => getUser(user)}
+            className={user.selected ? "bg-info text-white" : "bg-light"}
+            variant="contained"
+            color="secondary"
+          >
+            <small className="mr-2">{i + 1}. </small>{" "}
+            <ListItemText
+              primary={user.username}
+              secondary={user.usertitle + " - " + user.userphone}
+            />
+          </ListItem>
+        ))}
     </List>
   );
 };
@@ -166,3 +173,18 @@ export function DisplayUsers({
     </FormControl>
   );
 }
+
+export const RangeInput = ({ users, currentRange, sendRange }) => {
+  return (
+    <FormControl>
+      <InputLabel>view range</InputLabel>
+      <Input
+        type="number"
+        min={10}
+        max={Math.round(users.length)}
+        value={currentRange}
+        onChange={() => sendRange(e.taget.value)}
+      />
+    </FormControl>
+  );
+};

@@ -4,14 +4,24 @@ const initState = {
   users: [],
   selectedUsers: [],
   userdepts: [],
+  userStats: [],
+  sectionUsers: [],
 };
 function usersReducer(state = initState, action) {
   switch (action.type) {
     case C.ADD_USERS:
-      return { ...state, users: action.payload };
+      return { ...state, users: action.payload, sectionUsers: action.payload };
     case C.DELETE_USER:
       return {
+        ...state,
         users: state.users.filter((user) => user.id !== action.payload),
+      };
+    case C.SECTION_USERS:
+      return {
+        ...state,
+        sectionUsers: state.users.filter(
+          (user) => user.userdept === action.payload
+        ),
       };
     case C.EDIT_USER:
       const id = state.users.findIndex((user) => user.id === action.payload.id);
@@ -60,6 +70,11 @@ function usersReducer(state = initState, action) {
       };
     case C.USER_DEPTS:
       return { ...state, userdepts: action.payload };
+    case C.USER_STATS:
+      return {
+        ...state,
+        userStats: action.payload,
+      };
     default:
       return state;
   }

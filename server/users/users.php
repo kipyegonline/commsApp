@@ -55,6 +55,7 @@ if(isset($_GET["fetchusers"]) && $_GET["fetchusers"]=="true"){
 //send fdata
 $user->fetchUsers();
 }
+
 if(isset($_GET["getdeptusers"]) && $_GET["getdeptusers"]=="true"){
 $id=$_GET["deptId"];
 if($id){

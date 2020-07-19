@@ -2,8 +2,8 @@ import { C } from "./types";
 
 const initState = {
   issues: [],
-  selectedIssues: [],
   fetched: [],
+  deptIssues: [],
 };
 
 function issuesReducer(state = initState, action) {
@@ -26,23 +26,18 @@ function issuesReducer(state = initState, action) {
         issues: state.issues.filter((issue) => issue.altId !== action.payload),
       };
     case C.ADD_SELECTED:
-      let added = state.selectedIssues.some(
-        (item) => item.id === action.payload.id
-      );
-
-      if (!added) {
-        return {
-          ...state,
-          selectedIssues: [...state.selectedIssues, action.payload],
-        };
-      }
-      return state;
+      return {
+        ...state,
+        fetched: state.fetched.map((item) =>
+          item.id === action.payload ? { ...item, selected: true } : item
+        ),
+      };
 
     case C.REMOVE_SELECTED:
       return {
         ...state,
-        selectedIssues: state.selectedIssues.filter(
-          (issue) => issue.id !== action.payload
+        fetched: state.fetched.map((item) =>
+          item.id === action.payload ? { ...item, selected: false } : item
         ),
       };
     case C.ADD_FETCHED:
@@ -56,10 +51,14 @@ function issuesReducer(state = initState, action) {
         fetched: state.fetched.filter(
           (item) => item.userdept !== action.payload
         ),
-        selectedIssues: state.selectedIssues.filter(
-          (item) => item.userdept !== action.payload
-        ),
       };
+    case C.RESET_ISSUES:
+      return {
+        ...state,
+        fetched: [],
+      };
+    case C.DEPT_ISSUES:
+      return { ...state, deptIssues: action.payload };
     default:
       return state;
   }

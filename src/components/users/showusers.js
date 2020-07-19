@@ -8,15 +8,22 @@ import {
   FormHelperText,
 } from "@material-ui/core";
 import { Delete, Edit } from "@material-ui/icons";
+import Pagination from "@material-ui/lab/Pagination";
 
 function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
+  const [current, setCurrent] = React.useState(0);
+  const perpage = 10;
+  const pages = Math.ceil(users.length / perpage);
+  const start = current * perpage;
+  const end = current * perpage + perpage;
+  const handleChange = (e, p) => setCurrent(p - 1);
   return (
     <>
       <p className="alert alert-info text-center p-1 w-100 my-1">
         {users.length > 0 ? `${users.length} users` : ""}
       </p>
       <List dense style={{ width: "100%", padding: "0.5rem" }}>
-        {users.map((user, i) => (
+        {users.slice(start, end).map((user, i) => (
           <User
             {...user}
             deleteKey={deleteKey}
@@ -26,6 +33,17 @@ function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
           />
         ))}
       </List>
+      {users.length > 0 ? (
+        <Box>
+          <Pagination
+            color="primary"
+            count={pages}
+            defaultPage={current + 1}
+            size="large"
+            onChange={handleChange}
+          />
+        </Box>
+      ) : null}
     </>
   );
 }

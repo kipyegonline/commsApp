@@ -1,9 +1,11 @@
 import React from "react";
+import Alert from "@material-ui/lab/Alert";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { Grid, Divider } from "@material-ui/core";
 import * as postactions from "../redux/posts/actions";
 import * as useractions from "../redux/usersReducer/actions";
+import * as issueactions from "../redux/Issues/actions";
 import Layout from "../components/Layout";
 import PostsTable, { ToolBar } from "../components/posts/postTable";
 import { getLocal, handleLocalStorage } from "../components/helpers";
@@ -13,44 +15,58 @@ function Posts() {
   const [issue, setIssue] = React.useState("");
   const [user, setUser] = React.useState("");
   const dispatch = useDispatch();
-  const { uuid, userdept } = { uuid: 1, userdept: 1 };
+  // mock auth
+  const { uuid, userdept } = { uuid: 20, userdept: 5 };
   const { posts, issues, users } = useSelector((state) => ({
     posts: state.posts.posts,
-    issues: state.issues.issues,
-    users: state.users.users,
+    issues: state.issues.deptIssues,
+    users: state.users.userdepts,
   }));
 
+  // fetch  posts for currently logged in user
   const fetchPosts = (id) => {
     axios
-      .get(`./server/posts/posts.php?fetchposts=true&id=${id}&uuid=${uuid}`)
+      .get(`./server/posts/posts.php?fetchposts=true&uuid=${uuid}`)
       .then((res) => dispatch(postactions.addPosts(res.data)))
       .catch((error) => console.error("fetch posts:", error));
   };
 
-  // for network requests
+  // for other event-based network requests
   const fetchData = (url, callback) => {
     axios
       .get(url)
       .then((res) => dispatch(callback(res.data)))
       .catch((error) => setError("Results not found", error));
   };
-  // fetch dept users
+  // fetch dept users affiliated with logged in user
   const fetchDeptUsers = (dept) => {
     axios
-      .get(`./server/users/users.php?getdeptusers=true&deptId=${dept}}`)
+      .get(`./server/users/users.php?getdeptusers=true&deptId=${dept}`)
       .then((res) => dispatch(useractions.addUserdept(res.data)))
       .catch((error) => console.error("fetch posts:", error));
   };
-
+  // fetch issues belonging to currently logged in user
+  const fetchdeptIssues = (dept) => {
+    axios
+      .get(
+        `./server/issues/issues.php?fetchSelectedIssue=true&id=${dept}&uuid=${uuid}`
+      )
+      .then((res) => dispatch(issueactions.AddDeptissues(res.data)))
+      .catch((error) => console.error("fetch posts:", error));
+  };
+  /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
-    fetchPosts(uuid);
-    fetchDeptUsers(userdept);
+    Promise.all([
+      fetchPosts(uuid),
+      fetchDeptUsers(userdept),
+      fetchdeptIssues(userdept),
+    ]);
     // remove on prod
-    dispatch(postactions.addPosts(getLocal("posts")));
+    /** dispatch(postactions.addPosts(getLocal("posts"))); */
   }, []);
 
   /* Events */
-  // when on of the buttons is clicked
+  // when one of the buttons is clicked
   const handleButtonGroup = (id) => {
     const url = `./server/posts/posts.php?fetchbyStatus=true&id=${id}&uuid=${uuid}`;
     fetchData(url, postactions.addPosts);
@@ -99,7 +115,14 @@ function Posts() {
           handleSearch={handleSearch}
         />
         <Divider />
-        <PostsTable posts={posts} setTicks={handleBlueTicks} />
+        {posts.length ? (
+          <PostsTable posts={posts} setTicks={handleBlueTicks} />
+        ) : (
+          <Alert severity="error" className="text-center my-1 mx-auto w-50 p-1">
+            {" "}
+            You have no posts
+          </Alert>
+        )}
       </Grid>
     </Layout>
   );

@@ -113,7 +113,7 @@ const AddIssues = ({
       setTimeout(() => setError(""), 3000);
     } else if (issue.trimRight().length > 4 && userdept.length > 0) {
       btn.current.disabled = true;
-      sendValue({ issue, altId: v4(), userdept, id: v4() });
+      sendValue({ issue, altId: v4(), userdept });
       {
         /* remove id during prod*/
       }

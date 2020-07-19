@@ -42,7 +42,7 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
       .then((res) => {
         if (res.status === 200) {
           fetchDepts();
-          setEditing(false);
+          // setEditing(false);
           setSuccess(res.msg);
           setTimeout(() => {
             setDept("");

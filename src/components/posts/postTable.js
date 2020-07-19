@@ -26,7 +26,10 @@ import {
 } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Pagination from "@material-ui/lab/Pagination";
-import DisplayIssues, { DisplayUsers } from "./post";
+import DisplayIssues, { DisplayUsers, RangeInput } from "./post";
+
+//mock auth
+const { uuid, userdept } = { uuid: 20, userdept: 5 };
 
 function PostsTable({ posts = [], setTicks = (f) => f }) {
   const perpage = 10;
@@ -116,21 +119,22 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
 
 const TableBodyInfo = ({
   id,
-  seen,
   index = "",
   clientName = "",
   clientPhone = "",
   clientEmail = "",
   clientOrg = "",
   message = "",
-  issue = "",
   handler = "",
+  issue = "",
+  handler_id = 0,
   subject = "",
   clientDept = "",
   addedBy = "",
   status = "",
   altId = "",
   addedon = "",
+  seen = "0",
   setTicks = (f) => f,
 }) => {
   //checking status
@@ -149,23 +153,29 @@ const TableBodyInfo = ({
   const handlePostClick = (id, altId) => {
     console.log("clicked", id);
     // set blue ticks
-    setTicks(id);
+    if (uuid === +handler_id && seen === "0") {
+      setTicks(id);
+    }
+    //Route to another page
     //Router.push(`/post?issue=${altId}`);
   };
   return (
     <TableRow>
       <TableCell>
         {index + 1}
-        <Done color={seen ? "secondary" : "inherit"} />{" "}
+        <Done color={Boolean(Number(seen)) ? "secondary" : "inherit"} />{" "}
       </TableCell>
       <TableCell>{clientName}</TableCell>
       <TableCell>
-        {clientPhone} <br /> <small>{clientEmail}</small>
+        {clientPhone} <br />
+        <small>{clientEmail}</small>
       </TableCell>
       <TableCell>{clientOrg}</TableCell>
       <TableCell>{issue}</TableCell>
       <TableCell>{subject}</TableCell>
-      <TableCell>{handler}</TableCell>
+      <TableCell>
+        <b>{+handler_id === uuid ? "You" : handler} </b>
+      </TableCell>
       <TableCell>
         <Button className={`${checkStatus(status)[0]} text-white`} size="small">
           {checkStatus(status)[1]}

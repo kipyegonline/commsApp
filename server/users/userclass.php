@@ -38,7 +38,7 @@ if($id>0){
     //send users
  public function fetchUsers(){
   $sql="SELECT 
-a.id, a.username, a.usertitle, a.useremail,a.userpassword,
+a.id, a.username, a.usertitle, a.useremail,
  a.userdept, a.userphone, a.userAltId, b.department
  FROM comms_users a 
  INNER JOIN comms_departments b on a.userdept= b.id
@@ -81,7 +81,7 @@ public function editUsers($username, $userphone, $usertitle, $useremail, $userde
     // fetch users by departments
 public function fetchByDept($id){
         $sql="SELECT 
-a.id, a.username, a.usertitle, a.useremail,a.userpassword,  a.userdept, a.userphone, a.userAltId, b.department
+a.id, a.username, a.usertitle, a.useremail, a.userdept, a.userphone, a.userAltId, b.department
  FROM comms_users a 
   INNER JOIN comms_departments b on a.userdept= b.id 
   where a.userdept='$id'
@@ -107,7 +107,7 @@ echo sendFeedback(200, "$this->name deleted");
 
 public function searchUser($keyword){
     $sql="SELECT 
-a.id, a.username, a.usertitle, a.useremail,a.userpassword,  a.userdept, a.userphone, a.userAltId, b.department
+a.id, a.username, a.usertitle, a.useremail, a.userdept, a.userphone, a.userAltId, b.department
  FROM comms_users a 
   INNER JOIN comms_departments b on a.userdept= b.id 
   where 
@@ -129,7 +129,7 @@ if($stmt){
 }
 public function  getSelectedUser($id){
      $sql="SELECT 
-a.id, a.username, a.usertitle, a.useremail,a.userpassword,  a.userdept, a.userphone, a.userAltId, b.department
+a.id, a.username, a.usertitle, a.useremail, a.userdept, a.userphone, a.userAltId, b.department
  FROM comms_users a 
   INNER JOIN comms_departments b on a.userdept= b.id 
   where a.userdept='$id'

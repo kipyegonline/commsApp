@@ -47,6 +47,8 @@ const useStyles = makeStyles({
     margin: "0.25rem 0.15rem",
   },
 });
+// mock auth
+const { uuid, userdept } = { uuid: 20, userdept: 5 };
 
 function AddPost() {
   const [clientName, setClientName] = React.useState("");
@@ -65,17 +67,13 @@ function AddPost() {
 
   // hit redux store
 
-  const {
-    issues,
-    selectedUsers: users,
-    departments,
-    selectedIssues,
-  } = useSelector((state) => ({
-    issues: state.issues.issues,
-    selectedUsers: state.users.selectedUsers,
-    departments: state.departments.departments,
-    selectedIssues: state.issues.selectedIssues,
-  }));
+  const { issues, selectedUsers: users, departments } = useSelector(
+    (state) => ({
+      issues: state.issues.fetched,
+      selectedUsers: state.users.selectedUsers,
+      departments: state.departments.departments,
+    })
+  );
   const dispatch = useDispatch();
   // set classes and date
   const classes = useStyles();
@@ -102,7 +100,11 @@ function AddPost() {
       .then((res) => res.json())
       .then((data) => {
         if (data.length > 0) {
-          dispatch(issueactions.addFetched(data));
+          const fetchedIssues = data.map((item) => ({
+            ...item,
+            selected: false,
+          }));
+          dispatch(issueactions.addFetched(fetchedIssues));
         }
         throw new Error("No payload");
       })
@@ -158,25 +160,51 @@ function AddPost() {
   };
 
   const handleIssue = (incomingIssue) => {
+    // check if an issue being added or removed
     if (incomingIssue.length > issue.length) {
+      // select added issue
       const theItem = incomingIssue[incomingIssue.length - 1];
+      // confirm it exists on state
       const theIssue = issues.find((item) => item.id === theItem);
 
       if (theIssue) {
-        //send object to to redux
-
-        dispatch(issueactions.addSelected(theIssue));
+        // if it exists,check if there is similar issue selected as one can only select one issue per dept
+        let exists = issues.some(
+          (item) => item.userdept === theIssue.userdept && item.selected
+        );
+        if (!exists) {
+          dispatch(issueactions.addSelected(theItem));
+          // set state
+          setIssue(incomingIssue);
+        } else {
+          alert(
+            "Cannot select 2 issues from same department, split the post into 2"
+          );
+        }
       }
     } else {
+      // here its a bit tricky.. check which item was removed by comparing array state and  incoming
       issue.forEach((item) => {
         if (incomingIssue.indexOf(item) < 0) {
-          //remove item from redux
-          dispatch(issueactions.removeSelected(item));
+          // remove item from redux
+          dispatch(issueactions.removeSelected(item.id));
         }
       });
+      // set the damn state
+      setIssue(incomingIssue);
     }
-    console.log("curt", issue, "ing", incomingIssue.length, incomingIssue);
-    setIssue(incomingIssue);
+  };
+
+  let holder = [];
+  const appendHandlerToIssue = (handler, issues) => {
+    handler.forEach((item) => {
+      const res = issues.find((d) => d.userdept === item.userdept);
+      if (res) {
+        let token = item.id + "-" + res.id;
+
+        holder = [...holder, { ...item, id: token }];
+      }
+    });
   };
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -203,22 +231,24 @@ function AddPost() {
       //send to server
       setError("");
       btn.current.disabled = true;
+
+      appendHandlerToIssue(handler, issues);
+
       const data = {
         clientName,
         clientPhone,
         clientEmail,
         clientOrg,
         message,
-        issue,
-        handler: handler.map((user) => user.id).join("*"),
+        handler: holder.map((user) => user.id).join("*"),
         subject,
         clientDept: clientDept.join("*"),
-        addedBy: 1,
+        addedBy: uuid,
         status: 0,
         altId: v4(),
         addedon: new Date().toLocaleString(),
       };
-      console.log("dara", data);
+      console.log("dara", holder, data);
       //Remove on prod
       handleLocalStorage(data, "posts");
       $.ajax({
@@ -230,7 +260,7 @@ function AddPost() {
       })
         .then((res) => {
           console.log("res", res);
-          if (res.status == 200) {
+          if (res.status === 200) {
             setSuccess(res.msg);
             btn.current.disabled = false;
 
@@ -238,16 +268,18 @@ function AddPost() {
             setTimeout(() => {
               dispatch(useractions.resetSelected([]));
               dispatch(userdepts.resetSelected([]));
+              dispatch(issueactions.resetIssues([]));
               setSuccess();
               setClientName("");
               setClientPhone("");
               setClientEmail("");
               setClientOrg("");
               setMessage("");
-              setIssue("");
+              setIssue([]);
               setHandler([]);
               setSubject("");
               setClientDept([]);
+              holder = [];
               form.current.reset();
             }, 2000);
           } else {
@@ -264,7 +296,7 @@ function AddPost() {
       );
     }
   };
-  console.log("issueue", selectedIssues);
+
   return (
     <Layout>
       <Box className={classes.root}>
@@ -326,12 +358,14 @@ function AddPost() {
                 />
               </FormControl>
               {/* issues list */}
-              <DisplayIssues
-                getIssue={handleIssue}
-                issue={issue}
-                issues={issues}
-                multiple
-              />
+              {issues.length > 0 ? (
+                <DisplayIssues
+                  getIssue={handleIssue}
+                  issue={issue}
+                  issues={issues}
+                  multiple
+                />
+              ) : null}
               {/** item 4 */}
 
               <TextField
