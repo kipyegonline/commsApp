@@ -125,3 +125,49 @@ if(isset($_GET['fetchbyusers']) && $_GET["fetchbyusers"]=="true"){
       }
    }
 }
+//fetch recent posts
+if(isset($_GET['fetchrecentpost']) && $_GET["fetchrecentpost"]=="true"){
+ $uuid=$_GET["uuid"];
+if($uuid){
+$post->fetchRecentPosts($uuid);
+}
+   
+
+ 
+}
+
+
+
+/****** Commenst section */
+//fetch comments
+if(isset($_GET['fetchComments']) && $_GET["fetchComments"]=="true"){
+ 
+   $uuid=$_GET["uuid"];
+   $postId=$_GET["postId"];
+   if($uuid && $postId){
+      $post->fetchComments($postId,$uuid);
+   }
+
+}
+
+//add commet
+if(isset($_GET['addComment']) && $_GET["addComment"]=="true"){
+   $id=$_GET["id"];
+   $uuid=$_GET["uuid"];
+
+}
+
+//delete comment
+
+if(isset($_GET['deleteComment']) && $_GET["deleteComment"]=="true"){
+   $id=$_GET["id"];
+   $uuid=$_GET["uuid"];
+   if($id && $uuid){
+$post->deleteComment($id,$uuid);
+   }
+
+}
+//Edit
+if(isset($_GET['editComment']) && $_GET["editComment"]=="true"){
+
+}

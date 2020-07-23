@@ -155,7 +155,7 @@ a.message as message,
 }
 public function fetchposts($id){
  $query=" where b.user_id={$id} ORDER BY a.id desc " ;
-  $sql=Post::fetchQuery($query);
+  $sql=self::fetchQuery($query);
  //
 
   try{
