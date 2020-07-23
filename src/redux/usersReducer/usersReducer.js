@@ -15,6 +15,9 @@ function usersReducer(state = initState, action) {
       return {
         ...state,
         users: state.users.filter((user) => user.id !== action.payload),
+        sectionUsers: state.sectionUsers.filter(
+          (user) => user.id !== action.payload
+        ),
       };
     case C.SECTION_USERS:
       return {

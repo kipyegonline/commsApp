@@ -26,7 +26,7 @@ function Posts() {
   // fetch  posts for currently logged in user
   const fetchPosts = (id) => {
     axios
-      .get(`./server/posts/posts.php?fetchposts=true&uuid=${uuid}`)
+      .get(`./server/posts/posts.php?fetchposts=true&uuid=${id}`)
       .then((res) => dispatch(postactions.addPosts(res.data)))
       .catch((error) => console.error("fetch posts:", error));
   };
@@ -56,13 +56,15 @@ function Posts() {
   };
   /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
+    /*
     Promise.all([
       fetchPosts(uuid),
       fetchDeptUsers(userdept),
       fetchdeptIssues(userdept),
     ]);
+    */
     // remove on prod
-    /** dispatch(postactions.addPosts(getLocal("posts"))); */
+    dispatch(postactions.addPosts(getLocal("posts")));
   }, []);
 
   /* Events */

@@ -1,103 +1,53 @@
-import React, { useState } from "react";
-import {
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  FormText,
-  Card,
-} from "reactstrap";
+import React, { Fragment } from "react";
+import Typography from "@material-ui/core/Typography";
 import Layout from "../components/Layout";
 
-const AddStats = (props) => {
-  const [classv, setClassv] = useState("Select Victim class");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  };
-  return (
-    <Layout title="Add statsistsics">
-      <Form style={formStyle} onSubmit={handleSubmit}>
-        <FormGroup>
-          <Label for="selectClass">Select Victim class</Label>
-          <ClassSelect getValue={setClassv} selected={classv} />
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="fatalities">Fatalities</Label>
-          <Input type="text" name="fatalities" id="fatalities" placeholder="" />
-        </FormGroup>
-        <FormGroup>
-          <Label for="seriousInjuries">Seriously Injured</Label>
-          <Input
-            type="text"
-            name="seriousInjuries"
-            id="seriousInjuries"
-            placeholder=""
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="slightInjuries">Slightly Injured</Label>
-          <Input
-            type="text"
-            name="slightInjuries"
-            id="slightInjuries"
-            placeholder=""
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="notes">Text Area</Label>
-          <Input
-            type="textarea"
-            cols={50}
-            rows={3}
-            className="mb-3"
-            name="text"
-            id="notes"
-          />
-        </FormGroup>
-
-        <Button className="blue lighten-2 btn-block">Submit</Button>
-      </Form>
-    </Layout>
-  );
-};
-const ClassSelect = ({ getValue, selected }) => (
-  <select
-    id="selectClass"
-    className="form-control"
-    onChange={(e) =>
-      e.target.value === "Select Victim class" ? null : getValue(e.target.value)
-    }
-    value={selected}
-  >
-    <option>Select Victim class</option>
-    {addClass.map((clas) => (
-      <option key={clas.id} value={clas.name}>
-        {clas.name}
-      </option>
-    ))}
-  </select>
+const MyTypography = ({ variant, ...props }) => (
+  <Typography variant={variant || "inherit"} {...props} />
+);
+const TypesOfTypography = () => (
+  <Layout>
+    <Typography variant="h1" color="secondary">
+      h1 variant
+    </Typography>
+    <Typography variant="h2" color="secondary">
+      h2 variant
+    </Typography>
+    <Typography variant="h3" color="secondary">
+      h3 variant
+    </Typography>
+    <Typography variant="h4" color="secondary">
+      h4 variant
+    </Typography>
+    <Typography variant="h5" color="secondary">
+      h5 variant
+    </Typography>
+    <Typography variant="h6">h6 variant</Typography>
+    <Typography variant="subtitle1" color="primary">
+      subtitle1 variant
+    </Typography>
+    <Typography variant="subtitle2" color="textPrimary">
+      subtitle2 variant
+    </Typography>
+    <Typography variant="body1" color="textPrimary">
+      body1 variant
+    </Typography>
+    <Typography variant="body2">body2 variant</Typography>
+    <Typography variant="subtitle1">subtitle1 variant</Typography>
+    <Typography variant="caption">caption variant</Typography>
+    <Typography variant="button">button variant</Typography>
+    <Typography variant="overline">overline variant</Typography>
+    <Typography variant="title" component="div">
+      <Typography variant="inherit">inherited title variant</Typography>
+      <Typography variant="inherit">another inherited title variant</Typography>
+      <Typography variant="caption">overridden caption variant</Typography>
+    </Typography>
+    <MyTypography variant="title" component="div">
+      <MyTypography>inherited title variant</MyTypography>
+      <MyTypography>another inherited title variant</MyTypography>
+      <MyTypography variant="caption">overridden caption variant</MyTypography>
+    </MyTypography>
+  </Layout>
 );
 
-const formStyle = {
-  maxWidth: 600,
-  background: "#fff",
-  padding: "2rem",
-  margin: "1rem auto",
-  border: "1px solid yellow",
-  zIndex: 10,
-};
-const addClass = [
-  { id: 1, name: "pedestrians" },
-  { id: 2, name: "drivers" },
-  { id: 3, name: "passengers" },
-  { id: 4, name: "Pillion pass" },
-  { id: 5, name: "pedal Cyclist" },
-  { id: 6, name: "Motor cyclists" },
-];
-
-export default AddStats;
+export default TypesOfTypography;

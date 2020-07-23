@@ -13,6 +13,7 @@ import {
   Input,
   Divider,
   FormHelperText,
+  Card,
 } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import AddCircle from "@material-ui/icons/AddCircle";
@@ -78,6 +79,19 @@ function AddPost() {
   // set classes and date
   const classes = useStyles();
   const today = new Date();
+  React.useEffect(() => {
+    console.log("Effect, client Dept");
+    window.addEventListener(
+      "unload",
+      () => {
+        console.log("Dom unloading");
+      },
+      [clientDept]
+    );
+    window.addEventListener("load", () => {
+      console.log("Dom loaded");
+    });
+  }, []);
   // fetch users from clicked department
   const fetchSelectedUsers = (id) => {
     fetch(`./server/users/users.php?fetchSelectedUsers=true&id=${id}`)
@@ -296,6 +310,7 @@ function AddPost() {
       );
     }
   };
+  console.log(clientDept);
 
   return (
     <Layout>
@@ -405,6 +420,11 @@ function AddPost() {
             </Grid>
             <Grid item xs className={classes.grid}>
               <ShowDepts depts={departments} getDept={handleDept} />
+
+              <Card>
+                <small>Selected departments</small>
+                <SelectedDepts depts={departments} />
+              </Card>
             </Grid>
             <Grid item xs className={classes.grid}>
               {users.length > 0 ? (
@@ -420,3 +440,12 @@ function AddPost() {
   );
 }
 export default AddPost;
+
+const SelectedDepts = ({ depts }) =>
+  depts
+    .filter((dept) => dept.selected)
+    .map((dept, i) => (
+      <FormHelperText key={dept.id}>
+        {i + 1}.{dept.altName}
+      </FormHelperText>
+    ));

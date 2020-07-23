@@ -150,14 +150,16 @@ const TableBodyInfo = ({
   };
 
   // routing to next page and registering blue tucks
-  const handlePostClick = (id, altId) => {
-    console.log("clicked", id);
+  const handlePostClick = (id, altId, subject, issue) => {
     // set blue ticks
     if (uuid === +handler_id && seen === "0") {
       setTicks(id);
     }
-    //Route to another page
-    //Router.push(`/post?issue=${altId}`);
+    const subjectAs = subject.split(" ").join("-");
+    // Route to another page
+    Router.push(`/post?issue=${altId}`, undefined, {
+      shallow: false,
+    });
   };
   return (
     <TableRow>
@@ -188,7 +190,7 @@ const TableBodyInfo = ({
           variant="contained"
           color="secondary"
           target="_blank"
-          onClick={() => handlePostClick(id, altId)}
+          onClick={() => handlePostClick(id, altId, subject, issue)}
         >
           Details
         </Button>

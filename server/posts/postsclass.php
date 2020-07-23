@@ -4,7 +4,7 @@ require("../db.php");
 $mainQuery="select 
 a.id as id, 
 a.clientName as clientName,
-a.clientEMail as clientEMail, 
+a.clientEmail as clientEmail, 
 a.clientPhone,
 a.clientOrg as clientOrg, 
 a.message as message,
@@ -135,7 +135,7 @@ private static function fetchQuery($ext){
   return "select 
 a.id as id, 
 a.clientName as clientName,
-a.clientEMail as clientEMail, 
+a.clientEmail as clientEmail, 
 a.clientPhone,
 a.clientOrg as clientOrg, 
 a.message as message,

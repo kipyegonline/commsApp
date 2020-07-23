@@ -12,3 +12,5 @@ export const removeSelected = (payload) => ({
 export const addFetched = (payload) => ({ type: C.ADD_FETCHED, payload });
 export const removeFetched = (payload) => ({ type: C.REMOVE_FETCHED, payload });
 export const AddDeptissues = (payload) => ({ type: C.DEPT_ISSUES, payload });
+export const getDeptIssues = (payload) => ({ type: C.ISSUE_DEPT, payload });
+export const fetAll = () => ({ type: C.FETCH_ALL });

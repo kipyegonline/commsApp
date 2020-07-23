@@ -9,3 +9,4 @@ export const resetSelected = (payload) => ({
   type: C.RESET_SELECTED_DEPT,
   payload,
 });
+export const issueSelected = (payload) => ({ type: C.ISSUE_SELECTED, payload });

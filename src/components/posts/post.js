@@ -12,6 +12,7 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes, { array } from "prop-types";
+import Pagination from "@material-ui/lab/Pagination";
 
 // import Pagination from "@material-ui/lab/Pagination";
 
@@ -76,13 +77,19 @@ export default DisplayIssues;
 
 export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
   const [current, setCurrent] = React.useState(0);
-  let perpage = 10;
+  const perpage = 10;
+  const pages = Math.ceil(depts.length / perpage);
+  const start = current * perpage;
+  const end = current * perpage + perpage;
+  const handleChange = (e, p) => setCurrent(p - 1);
 
   return (
-    <List>
-      {depts
-        .slice(current * perpage, current * perpage + perpage)
-        .map((dept, i) => (
+    <>
+      <span className="mx-auto text-center alert alert-info my-2">
+        {depts.length} departments
+      </span>
+      <List>
+        {depts.slice(start, end).map((dept, i) => (
           <ListItem
             key={dept.id}
             dense
@@ -93,37 +100,45 @@ export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
             button
             onClick={() => getDept(dept)}
           >
-            <small className="mr-2">{i + 1}. </small>{" "}
+            <small className="mr-2">{start + i + 1}. </small>{" "}
             <ListItemText primary={dept.department} />
           </ListItem>
         ))}
-    </List>
+      </List>
+      {depts.length > 10 ? (
+        <Pagination
+          count={pages}
+          defaultValue={current + 1}
+          color="primary"
+          onChange={handleChange}
+          className="my-2"
+        />
+      ) : null}
+    </>
   );
 };
 
 export const ShowUsers = ({ users = [], getUser = (f) => f }) => {
   return (
     <List dense>
-      {users
-        .filter((user) => +user.id !== uuid)
-        .map((user, i) => (
-          <ListItem
-            key={user.id}
-            alignItems="center"
-            divider
-            button
-            onClick={() => getUser(user)}
-            className={user.selected ? "bg-info text-white" : "bg-light"}
-            variant="contained"
-            color="secondary"
-          >
-            <small className="mr-2">{i + 1}. </small>{" "}
-            <ListItemText
-              primary={user.username}
-              secondary={user.usertitle + " - " + user.userphone}
-            />
-          </ListItem>
-        ))}
+      {users.map((user, i) => (
+        <ListItem
+          key={user.id}
+          alignItems="center"
+          divider
+          button
+          onClick={() => getUser(user)}
+          className={user.selected ? "bg-info text-white" : "bg-light"}
+          variant="contained"
+          color="secondary"
+        >
+          <small className="mr-2">{i + 1}. </small>{" "}
+          <ListItemText
+            primary={user.username}
+            secondary={user.usertitle + " - " + user.userphone}
+          />
+        </ListItem>
+      ))}
     </List>
   );
 };
@@ -164,11 +179,13 @@ export function DisplayUsers({
         <MenuItem value="">
           <em>Select Colleauge</em>
         </MenuItem>
-        {users.map((item) => (
-          <MenuItem key={item.altId} value={item.id}>
-            {item.username}
-          </MenuItem>
-        ))}
+        {users
+          .filter((item) => +item.id !== uuid)
+          .map((item) => (
+            <MenuItem key={item.altId} value={item.id}>
+              {item.username}
+            </MenuItem>
+          ))}
       </Select>
     </FormControl>
   );
@@ -186,5 +203,23 @@ export const RangeInput = ({ users, currentRange, sendRange }) => {
         onChange={() => sendRange(e.taget.value)}
       />
     </FormControl>
+  );
+};
+
+const MainPagination = (issues) => {
+  const [current, setCurrent] = React.useState(0);
+  const perpage = 10;
+  const pages = Math.ceil(issues.length / perpage);
+  const start = current * perpage;
+  const end = current * perpage + perpage;
+  const handleChange = (e, p) => setCurrent(p - 1);
+  return (
+    <Pagination
+      count={pages}
+      defaultValue={current + 1}
+      color="primary"
+      onChange={handleChange}
+      className="my-2"
+    />
   );
 };

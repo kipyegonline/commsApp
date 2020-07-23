@@ -30,6 +30,16 @@ function departmentReducer(state = initState, action) {
             : { ...dept }
         ),
       };
+    case C.ISSUE_SELECTED:
+      return {
+        ...state,
+        departments: state.departments.map((dept) =>
+          dept.id === action.payload
+            ? { ...dept, selected: true }
+            : { ...dept, selected: false }
+        ),
+      };
+
     case C.RESET_SELECTED_DEPT:
       return {
         ...state,

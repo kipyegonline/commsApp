@@ -68,7 +68,7 @@ function Users() {
 
   React.useEffect(() => {
     // fetch data
-    /*
+
     // remove on prod
     dispatch(
       actions.addUser(
@@ -86,8 +86,8 @@ function Users() {
         }))
       )
     );
-    */
 
+    /*
     // get the departments and users
 
     Promise.all([
@@ -98,7 +98,7 @@ function Users() {
         dispatch(actions.addUser(res))
       ),
       fetchStats("../server/users/users.php?fetchuserdeptstats=true"),
-    ]);
+    ]);*/
   }, []);
 
   // hit the redux store
@@ -161,7 +161,13 @@ function Users() {
         justify="center"
         grow={1}
       >
-        <Grid item xs className={`${classes.root} mt-1`} component="div">
+        <Grid
+          item
+          md={4}
+          xs={12}
+          className={`${classes.root} mt-5`}
+          component="div"
+        >
           {editor ? (
             <AddUser
               depts={departments}
@@ -178,8 +184,17 @@ function Users() {
               url="./server/users/users.php?adduser=true"
             />
           )}
+          {tableUsers.length > 0 ? (
+            <TableUsers users={users} depts={tableUsers} />
+          ) : null}
         </Grid>
-        <Grid item xs className={`${classes.root} my-1`} component="div">
+        <Grid
+          item
+          md={8}
+          xs={12}
+          className={`${classes.root} my-1`}
+          component="div"
+        >
           {departments.length > 0 ? (
             <AddDept depts={departments} sendValue={getSelected} />
           ) : null}
@@ -189,12 +204,9 @@ function Users() {
               deleteKey={handleDelete}
               editKey={handleEdit}
             />
-          ) : null}
-        </Grid>
-        <Grid item xs className={`${classes.root} mb-2`} component="div">
-          {tableUsers.length > 0 ? (
-            <TableUsers users={users} depts={tableUsers} />
-          ) : null}
+          ) : (
+            <CircularProgress color="primary" className="max-auto my-auto" />
+          )}
         </Grid>
       </Grid>
     </Layout>

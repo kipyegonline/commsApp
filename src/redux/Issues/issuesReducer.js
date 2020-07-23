@@ -2,6 +2,7 @@ import { C } from "./types";
 
 const initState = {
   issues: [],
+  addedIssues: [],
   fetched: [],
   deptIssues: [],
 };
@@ -19,11 +20,29 @@ function issuesReducer(state = initState, action) {
       if (check) {
         return state;
       }
-      return { ...state, issues: [...state.issues, action.payload] };
+      return {
+        ...state,
+        issues: [...state.issues, action.payload],
+      };
     case C.DELETE_ISSUES:
       return {
         ...state,
         issues: state.issues.filter((issue) => issue.altId !== action.payload),
+        addedIssues: state.issues.filter(
+          (issue) => issue.altId !== action.payload
+        ),
+      };
+    case C.ISSUE_DEPT:
+      return {
+        ...state,
+        addedIssues: state.issues.filter(
+          (issue) => issue.userdept === action.payload
+        ),
+      };
+    case C.FETCH_ALL:
+      return {
+        ...state,
+        addedIssues: state.issues,
       };
     case C.ADD_SELECTED:
       return {
