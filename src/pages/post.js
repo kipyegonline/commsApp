@@ -2,7 +2,7 @@ import React from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { makeStyles } from "@material-ui/styles";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, ReactReduxContext } from "react-redux";
 import {
   Box,
   Card,
@@ -12,6 +12,11 @@ import {
   Divider,
   Typography,
   ButtonGroup,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Badge,
   Button,
 } from "@material-ui/core";
 import Skeleton from "@material-ui/lab/Skeleton";
@@ -36,6 +41,7 @@ const { uuid, userdept } = { uuid: 20, userdept: 5 };
 
 const Post = () => {
   const [reloading, setReloading] = React.useState(false);
+  const [related, setRelated] = React.useState([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   // get the clicked item from router props
@@ -70,21 +76,23 @@ const Post = () => {
   };
   // fetch issues
 
-  const fetchdeptIssues = (dept) => {
+  const fetchRelatedIssues = (uuid) => {
     axios
-      .get(
-        `./server/issues/issues.php?fetchSelectedIssue=true&id=${dept}&uuid=${uuid}`
-      )
-      .then((res) => dispatch(issueactions.AddDeptissues(res.data)))
+      .get(`./server/issues/issues.php?fetchRelatedIssues=true&&uuid=${uuid}`)
+      .then((res) => res.data.map((item) => ({ ...item, selected: false })))
+      .then((res) => setRelated(res))
       .catch((error) => console.error("fetch posts:", error));
   };
 
   // fetch 5 recent posts minus the one under review
 
-  const fetchRecentPosts = (userId) => {
+  const fetchRecentPosts = (userId, issue, recent) => {
     axios
-      .get(`./server/posts/posts.php?fetchrecentpost=true&uuid=${userId}`)
-      .then((res) => dispatch(postactions.addrecentposts(res.data)))
+      .get(
+        `./server/posts/posts.php?fetchrecentpost=true&uuid=${userId}&current=${issue}&recent=${recent}`
+      )
+      .then((res) => res.data.map((item) => ({ ...item, selected: false })))
+      .then((res) => dispatch(postactions.addrecentposts(res)))
 
       .catch((error) => console.error("fetch recent posts:", error));
   };
@@ -96,16 +104,32 @@ const Post = () => {
 
     // pole pole
     setTimeout(() => {
-      fetchdeptIssues(userdept);
-      fetchRecentPosts(uuid);
+      fetchRelatedIssues(uuid);
+      fetchRecentPosts(uuid, issue, true);
     }, 2000);
+  };
+  //when a recent post is clicked
+  const getRecent = (post) => {
+    dispatch(postactions.recentClicked(post));
+  };
+  const getRelated = (issue) => {
+    let issues = related.map((item) =>
+      item.issue === issue
+        ? { ...item, selected: true }
+        : { ...item, slected: false }
+    );
+    setRelated(issues);
+    fetchRecentPosts(uuid, issue.issueId, false);
   };
   const handleResolve = (status) => {
     axios
       .get(
         `./server/posts/posts.php?resolveissue=true&uuid=${uuid}&issue=${issue}&status=${status}`
       )
-      .then((res) => console.log(res))
+      .then((res) => {
+        if (status === 2) fetchRecentPosts(uuid);
+        console.log(res, "resolved");
+      })
       .catch((error) => console.log(error));
     dispatch(postactions.resolveIssue({ status, altId: issue }));
   };
@@ -121,7 +145,7 @@ const Post = () => {
     }
     // fetch issues and recent posts pole pole
     setTimeout(() => {
-      fetchdeptIssues(userdept);
+      fetchRelatedIssues(uuid);
       fetchRecentPosts(uuid);
     }, 2000);
     // listen to load event, reload that is
@@ -137,8 +161,9 @@ const Post = () => {
     <Layout title={title}>
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
-          <Grid item xs={0} md={3}>
-            <p>Issues</p>
+          <Grid item xs={false} md={3}>
+            <Typography variant="h6">Recent issues</Typography>
+            <RelatedIssues relatedissues={[]} sendRelated={getRelated} />
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
             {" "}
@@ -159,8 +184,13 @@ const Post = () => {
               </Box>
             )}
           </Grid>
-          <Grid item xs={0} md={3}>
-            <p>Recent</p>
+          <Grid item xs={false} md={3}>
+            <Typography variant="h6">Recent posts</Typography>
+            {recent.length ? (
+              <RecentPosts recent={recent} sendRecent={getRecent} />
+            ) : (
+              <p>Loading recent posts</p>
+            )}
           </Grid>
         </Grid>
       ) : (
@@ -194,7 +224,7 @@ const PostDetails = ({
   handleResolve,
 }) => (
   <Box className="my-2 p-2">
-    <h5> {subject}</h5>
+    <Typography variant="h6"> {subject}</Typography>
     <Divider />
     <Box>
       <Typography> {message}</Typography>
@@ -242,3 +272,45 @@ const PostDetails = ({
     </Box>
   </Box>
 );
+
+const RecentPosts = ({ recent, sendRecent }) => {
+  console.log("recent", recent);
+  return (
+    <List align="left">
+      {recent.map((post) => (
+        <ListItem
+          key={post.id}
+          button
+          divider
+          selected
+          color={post.selected ? "secondary" : ""}
+          align="right"
+          onClick={() => sendRecent(post)}
+        >
+          <ListItemText primary={post.subject} secondary={post.issue} />
+        </ListItem>
+      ))}
+    </List>
+  );
+};
+
+const RelatedIssues = ({ relatedissues, sendRelated }) => {
+  return (
+    <List align="left">
+      {relatedissues.map((item, i) => (
+        <ListItem
+          key={i}
+          button
+          divider
+          selected
+          color={item.selected ? "secondary" : ""}
+          align="right"
+          onClick={() => sendRelated(item.issue)}
+        >
+          <ListItemText primary={item.issue} />
+          <Badge>{item.issuecount}</Badge>
+        </ListItem>
+      ))}
+    </List>
+  );
+};

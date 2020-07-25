@@ -84,8 +84,6 @@ function AddUser({
     setuserDept("");
   };
   React.useEffect(() => {
-    console.log("changes up");
-
     if (Edit["id"] !== undefined) {
       setEditing(true);
       setUsername(Edit.username);

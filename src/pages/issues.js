@@ -48,7 +48,7 @@ function Issues() {
   }));
   // fetch issues from server
   const fetchIssues = () => {
-    axioso
+    axios
       .get("./server/issues/issues.php?fetchissues=true")
       .then((res) => dispatch(handleIssues.AddIssues(res.data)))
       .catch((error) => console.log(error, "fetch error"));
@@ -65,17 +65,17 @@ function Issues() {
     dispatch(handleIssues.deleteIssues(id));
   };
   React.useEffect(() => {
-    /*fetchIssues();
-     dispatch(handleDepts.issueSelected(userdept)); 
-     dispatch(handleIssues.getDeptIssues(userdept));
-     */
+    fetchIssues();
+    dispatch(handleDepts.issueSelected(userdept));
+    dispatch(handleIssues.getDeptIssues(userdept));
+
     //remove prod
-    dispatch(handleIssues.AddIssues(getLocal("issues")));
+    // dispatch(handleIssues.AddIssues(getLocal("issues")));
   }, []);
 
   const handleDept = (e) => {
     setDept(e);
-    console.log("khalid", e);
+
     dispatch(handleDepts.issueSelected(e.id));
     dispatch(handleIssues.getDeptIssues(e.id));
   };
@@ -139,11 +139,11 @@ const AddIssues = ({
       setTimeout(() => setError(""), 3000);
     } else if (issue.trimRight().length > 4 && userdept.id.length > 0) {
       btn.current.disabled = true;
-      sendValue({ issue, altId: v4(), userdept: userdept.id, id: v4() });
+      sendValue({ issue, altId: v4(), userdept: userdept.id });
 
       /* remove id during prod */
 
-      sendSelected("");
+      // sendSelected("");
       $.ajax({
         url: "./server/issues/issues.php?addissue=true",
         data: { issue, altId: v4(), userdept: userdept.id },

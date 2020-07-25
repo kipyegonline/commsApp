@@ -310,7 +310,6 @@ function AddPost() {
       );
     }
   };
-  console.log(clientDept);
 
   return (
     <Layout>

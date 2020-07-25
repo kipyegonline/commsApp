@@ -74,7 +74,7 @@ if(isset($_GET['fetchposts']) && $_GET["fetchposts"]=="true"){
 if(isset($_GET['setticks']) && $_GET["setticks"]=="true"){
    $id=$_GET["id"];
     $uuid=$_GET["uuid"];
-   if($uuid && $id ){
+   if(isset($uuid) && isset($id) ){
       $post->setTicks($id,$uuid);
    }
 }
@@ -83,7 +83,7 @@ if(isset($_GET['setticks']) && $_GET["setticks"]=="true"){
 if(isset($_GET['fetchbyStatus']) && $_GET["fetchbyStatus"]=="true"){
    $id=$_GET["id"];
     $uuid=$_GET["uuid"];
-   if($uuid){
+   if(isset($uuid)){
       $data=$post->fetchbyStatus($id,$uuid);
       echo json_encode($data);
    }
@@ -92,7 +92,7 @@ if(isset($_GET['fetchbyStatus']) && $_GET["fetchbyStatus"]=="true"){
 if(isset($_GET['fetchbyIssues']) && $_GET["fetchbyIssues"]=="true"){
    $id=$_GET["id"];
     $uuid=$_GET["uuid"];
-   if($id && $uuid){
+   if(isset($id) && isset($uuid)){
       $data=$post->fetchbyIssues($id,$uuid);
       if(count($data)>0){
  echo json_encode($data);
@@ -107,7 +107,7 @@ if(isset($_GET['fetchbyIssues']) && $_GET["fetchbyIssues"]=="true"){
 if(isset($_GET['handleSearch']) && $_GET["handleSearch"]=="true"){
    $keyword=$_GET["keyword"];
     $uuid=$_GET["uuid"];
-   if($keyword && $uuid){
+   if(isset($keyword) && isset($uuid)){
       $post->fetchbySearch($id,$uuid);
    }
 }
@@ -116,7 +116,7 @@ if(isset($_GET['handleSearch']) && $_GET["handleSearch"]=="true"){
 if(isset($_GET['fetchbyusers']) && $_GET["fetchbyusers"]=="true"){
    $id=$_GET["id"];
     $uuid=$_GET["uuid"];
-   if($id && $uuid){
+   if(isset($id) && isset($uuid)){
      $data= $post->fetchbyUsers($id);
      if(count($data)>0){
       echo json_encode($data);
@@ -128,15 +128,22 @@ if(isset($_GET['fetchbyusers']) && $_GET["fetchbyusers"]=="true"){
 //fetch recent posts
 if(isset($_GET['fetchrecentpost']) && $_GET["fetchrecentpost"]=="true"){
  $uuid=$_GET["uuid"];
-if($uuid){
+if(isset($uuid)){
 $post->fetchRecentPosts($uuid);
 }
    
 
  
 }
-
-
+//handleResolution
+if(isset($_GET['resolveissue']) && $_GET["resolveissue"]=="true"){
+   $uuid=$_GET["uuid"];
+   $issueId=$_GET["issue"];
+   $status=$_GET["status"];
+   if(isset($uuid) && isset($issueId)&& isset($status)){
+      $post->resolveIssue($uuid,$issueId,$status);
+   }
+}
 
 /****** Commenst section */
 //fetch comments
@@ -144,7 +151,7 @@ if(isset($_GET['fetchComments']) && $_GET["fetchComments"]=="true"){
  
    $uuid=$_GET["uuid"];
    $postId=$_GET["postId"];
-   if($uuid && $postId){
+   if(isset($uuid) && isset($postId)){
       $post->fetchComments($postId,$uuid);
    }
 
@@ -162,7 +169,7 @@ if(isset($_GET['addComment']) && $_GET["addComment"]=="true"){
 if(isset($_GET['deleteComment']) && $_GET["deleteComment"]=="true"){
    $id=$_GET["id"];
    $uuid=$_GET["uuid"];
-   if($id && $uuid){
+   if(isset($id) && isset($uuid)){
 $post->deleteComment($id,$uuid);
    }
 

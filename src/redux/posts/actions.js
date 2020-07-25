@@ -15,3 +15,4 @@ export const addrecentposts = (payload) => ({
   type: C.ADD_RECENT_POSTS,
   payload,
 });
+export const recentClicked = (payload) => ({ type: C.RECENT_CLICKED, payload });

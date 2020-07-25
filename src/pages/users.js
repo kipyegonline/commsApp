@@ -68,7 +68,7 @@ function Users() {
 
   React.useEffect(() => {
     // fetch data
-
+    /*
     // remove on prod
     dispatch(
       actions.addUser(
@@ -86,8 +86,8 @@ function Users() {
         }))
       )
     );
+*/
 
-    /*
     // get the departments and users
 
     Promise.all([
@@ -98,7 +98,7 @@ function Users() {
         dispatch(actions.addUser(res))
       ),
       fetchStats("../server/users/users.php?fetchuserdeptstats=true"),
-    ]);*/
+    ]);
   }, []);
 
   // hit the redux store

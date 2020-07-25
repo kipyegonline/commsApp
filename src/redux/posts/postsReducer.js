@@ -30,6 +30,16 @@ function postsReducer(state = initState, action) {
         ...state,
         post: state.posts.find((post) => post.altId === action.payload),
       };
+    case C.RECENT_CLICKED:
+      return {
+        ...state,
+        post: action.payload,
+        recentPosts: state.recentPosts.map((post) =>
+          post.id === action.payload.id
+            ? { ...post, selected: true }
+            : { ...post, selected: false }
+        ),
+      };
     case C.RESOLVE_ISSUE:
       return {
         ...state,

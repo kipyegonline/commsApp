@@ -164,10 +164,8 @@ const CommentsList = ({ list, getEdited, deleteKey, handler_id }) => {
           <span style={{ fontSize: 16 }} className="text-primary">
             {item.addedBy}
           </span>
-          <p style={{ fontSize: 14, fontWeight: "normal" }}>
-            {item.comment}
-            <FormHelperText> {item.addedEn}</FormHelperText>
-          </p>
+          <p style={{ fontSize: 14, fontWeight: "normal" }}>{item.comment}</p>
+          <FormHelperText> {item.addedEn}</FormHelperText>
           <EditInput
             id={item.altId}
             comment={item.comment}
