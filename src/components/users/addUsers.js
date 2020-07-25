@@ -49,6 +49,7 @@ function AddUser({
   Edit = {},
   updateData = (f) => f,
   closeEditor = (f) => f,
+  isEditing = false,
 }) {
   const [username, setUsername] = React.useState("");
   const [usertitle, setUserTitle] = React.useState("");
@@ -71,10 +72,22 @@ function AddUser({
 
     setFunc(e.target.value);
   };
+
+  const handleEditor = () => {
+    closeEditor(false);
+    setEditing(false);
+    setUsername("");
+    setUserPhone("");
+    setUserTitle("");
+    setUserEmail("");
+    setUserpassword("");
+    setuserDept("");
+  };
   React.useEffect(() => {
+    console.log("changes up");
+
     if (Edit["id"] !== undefined) {
       setEditing(true);
-
       setUsername(Edit.username);
       setUserPhone(Edit.userphone);
       setUserTitle(Edit.usertitle);
@@ -85,6 +98,8 @@ function AddUser({
   }, [Edit]);
   const handleSubmit = (e) => {
     e.preventDefault();
+    // put some band aid to password while editing
+    editing && setUserpassword("littlefireseverywhere");
 
     if (username.trim().length < 5 || username.indexOf(" ") < 0) {
       username.trim().length < 5
@@ -246,12 +261,10 @@ function AddUser({
         <CloseRounded
           className="float-right"
           color="secondary"
-          onClick={() => closeEditor(false)}
+          onClick={handleEditor}
         />
-      ) : (
-        ""
-      )}
-      <p className="text-center">{title}</p>
+      ) : null}
+      <p className="text-center">{editing ? "Edit User" : "Add User"}</p>
 
       <FormControl justify="center" className={classes.formControl}>
         <InputLabel>Name</InputLabel>
@@ -308,18 +321,20 @@ function AddUser({
           inputProps={{ "aria-label": "description" }}
         />
       </FormControl>
-      <FormControl className={classes.formControl}>
-        <InputLabel>Password</InputLabel>
-        <Input
-          type="password"
-          className={classes.input}
-          onChange={(e) => sendValue(e)}
-          id="setUserpassword"
-          value={userpassword}
-          placeholder=""
-          inputProps={{ "aria-label": "description" }}
-        />
-      </FormControl>
+      {!editing ? (
+        <FormControl className={classes.formControl}>
+          <InputLabel>Password</InputLabel>
+          <Input
+            type="password"
+            className={classes.input}
+            onChange={(e) => sendValue(e)}
+            id="setUserpassword"
+            value={userpassword}
+            placeholder=""
+            inputProps={{ "aria-label": "description" }}
+          />
+        </FormControl>
+      ) : null}
       <div className="form-group">
         <FormHelperText className="text-danger">{errormsg}</FormHelperText>
         <FormHelperText className="text-success">{successmsg}</FormHelperText>
@@ -334,7 +349,7 @@ function AddUser({
         className="btn btn-block mt-3"
         aria-label="move all right"
       >
-        {title}
+        {editing ? "Edit User" : "Add User"}
       </Button>
     </form>
   );

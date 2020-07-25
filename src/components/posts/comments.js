@@ -29,20 +29,30 @@ const { uuid, userdept, username } = {
   username: "Vince",
 };
 
-export default function Comments({ comments, sendValue, post_id }) {
+export default function Comments({ comments, sendValue, post_id, handler_id }) {
   const [text, setText] = React.useState("");
   const dispatch = useDispatch();
 
   const btn = React.useRef(null);
   const form = React.useRef(null);
   const getEdited = (data) => {
-    console.log(data);
+    dispatch(postactions.addEdited(data));
+    $.ajax({
+      type: "POST",
+      url: "./server/posts/posts.php?editComment=true",
+      data,
+      dataType: "json",
+    })
+      .then((res) => console.log(res))
+      .catch((error) => console.error(error));
   };
   const handleDelete = (id) => {
-    dispatch(postactions.deleteComment(id));
-    axios.get(
-      `./server/posts/posts.php?deleteComment=true&id=${id}&uuid=${uuid}`
-    );
+    if (confirm("Delete comment?")) {
+      dispatch(postactions.deleteComment(id));
+      axios.get(
+        `./server/posts/posts.php?deleteComment=true&id=${id}&uuid=${uuid}`
+      );
+    }
   };
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -51,7 +61,7 @@ export default function Comments({ comments, sendValue, post_id }) {
       btn.current.disabled = true;
 
       const comment = {
-        comment: text,
+        comment: text.trim(),
         altId: v4(),
         uuid,
         post_id,
@@ -98,7 +108,11 @@ export default function Comments({ comments, sendValue, post_id }) {
       alignContent="flex-start"
     >
       <Grid md={6} xs={12} item>
-        <form onSubmit={handleSubmit} ref={form}>
+        <form
+          onSubmit={handleSubmit}
+          onKeyPress={(e) => e.key === "Enter" && handleSubmit(e)}
+          ref={form}
+        >
           <TextField
             label="Write comment"
             variant="outlined"
@@ -115,9 +129,12 @@ export default function Comments({ comments, sendValue, post_id }) {
         </form>
       </Grid>
       <Grid md={6} xs={12} item>
-        {comments.length ? <CommentsCount comments={comments.length} /> : null}
+        {comments.length ? (
+          <CommentsCounter comments={comments.length} />
+        ) : null}
         <CommentsList
           list={comments}
+          handler_id={handler_id}
           getEdited={getEdited}
           deleteKey={handleDelete}
         />
@@ -126,12 +143,20 @@ export default function Comments({ comments, sendValue, post_id }) {
   );
 }
 
-const CommentsList = ({ list, getEdited, deleteKey }) => {
+const CommentsList = ({ list, getEdited, deleteKey, handler_id }) => {
   const [editing, setEditing] = React.useState({
     clicked: false,
     id: undefined,
   });
-  console.log("editing", editing);
+  const handleCommentEdit = (e) => {
+    if (e.target) {
+      setEditing({
+        clicked: true,
+        id: e.target.dataset.editor,
+      });
+    }
+  };
+
   return (
     <Box>
       {list.map((item, index) => (
@@ -139,35 +164,35 @@ const CommentsList = ({ list, getEdited, deleteKey }) => {
           <span style={{ fontSize: 16 }} className="text-primary">
             {item.addedBy}
           </span>
-          <p style={{ fontSize: 14, fontWeight: "normal" }}>{item.comment} </p>
-          <FormHelperText>
-            {item.addedEn}{" "}
-            <Delete
-              size="sm"
-              color="secondary"
-              className="ml-3"
-              onClick={() => deleteKey(item.altId)}
-            />{" "}
-            |
-            <Edit
-              color="primary"
-              data-editor={item.altId}
-              onClick={(e) =>
-                setEditing((lock) => ({
-                  ...lock,
-                  clicked: false,
-                  id: e.target.dataset.editor,
-                }))
-              }
-            />
-          </FormHelperText>
+          <p style={{ fontSize: 14, fontWeight: "normal" }}>
+            {item.comment}
+            <FormHelperText> {item.addedEn}</FormHelperText>
+          </p>
           <EditInput
             id={item.altId}
             comment={item.comment}
             display={editing.clicked && editing.id === item.altId}
             sendEdited={getEdited}
             autoFocus
+            setEditing={setEditing}
           />
+          {/* Restriction */}
+          {handler_id === uuid ? (
+            <>
+              <FormHelperText>
+                <IconButton onClick={() => deleteKey(item.altId)}>
+                  <Delete size="sm" color="secondary" className="ml-3" />
+                </IconButton>{" "}
+                |
+                <IconButton
+                  data-editor={item.altId}
+                  onClick={handleCommentEdit}
+                >
+                  <Edit color="primary" data-editor={item.altId} />
+                </IconButton>
+              </FormHelperText>
+            </>
+          ) : null}
 
           <Divider />
         </Box>
@@ -175,23 +200,55 @@ const CommentsList = ({ list, getEdited, deleteKey }) => {
     </Box>
   );
 };
-const CommentsCount = ({ comments }) => (
+const CommentsCounter = ({ comments }) => (
   <Typography variant="subtitle1">
     {comments} {comments > 1 ? "comments" : "comment"}
   </Typography>
 );
 
-const EditInput = ({ id, display, comment }) => {
-  const [edit, setEdit] = React.useState("");
+const EditInput = ({ id, display, comment, sendEdited, setEditing }) => {
+  const [edit, setEdit] = React.useState(comment);
+  const handleChange = (e) => {
+    setEdit(e.target.value);
+  };
+  React.useEffect(() => {
+    setEdit(comment);
+  }, [comment]);
+
+  const handleEdited = (e) => {
+    if (e.key === "Enter") {
+      if (edit.trim().length !== comment.trim().length) {
+        sendEdited({ id, edit, addedEn: new Date().toLocaleString() });
+        setEditing({
+          clicked: false,
+          id: undefined,
+        });
+        setEdit("");
+      } else {
+        setEditing({
+          clicked: false,
+          id: undefined,
+        });
+      }
+    } else if (e.key === "Escape") {
+      setEditing({
+        clicked: false,
+        id: undefined,
+      });
+    }
+  };
 
   return (
     <FormControl style={{ display: display ? "inline" : "none" }}>
-      <FormHelperText>press enter to comment or esc to cancel</FormHelperText>
       <TextField
         type="text"
-        value={comment}
-        onChange={(e) => setEdit(e.target.value)}
+        value={edit}
+        onChange={handleChange}
+        onKeyDown={handleEdited}
       />
+      <FormHelperText error>
+        press enter to comment or esc to cancel
+      </FormHelperText>
     </FormControl>
   );
 };

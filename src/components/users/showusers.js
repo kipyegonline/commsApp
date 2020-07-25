@@ -41,7 +41,7 @@ function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
           <Pagination
             color="primary"
             count={pages}
-            defaultPage={current + 1}
+            defaultValue={current + 1}
             size="large"
             onChange={handleChange}
           />

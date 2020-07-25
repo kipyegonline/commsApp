@@ -27,11 +27,12 @@ function usersReducer(state = initState, action) {
         ),
       };
     case C.EDIT_USER:
-      const id = state.users.findIndex((user) => user.id === action.payload.id);
+      const id = state.users.findI((user) => user.id === action.payload.id);
       if (id) {
         state.users[id] = action.payload;
         return state;
       }
+
       return state;
     case C.SELECTED_USER: // add post
       return {

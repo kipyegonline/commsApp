@@ -30,6 +30,16 @@ function postsReducer(state = initState, action) {
         ...state,
         post: state.posts.find((post) => post.altId === action.payload),
       };
+    case C.RESOLVE_ISSUE:
+      return {
+        ...state,
+        posts: state.posts.map((post) =>
+          post.altId === action.payload.altId
+            ? { ...post, status: action.payload.status }
+            : { ...post }
+        ),
+        post: { ...state.post, status: action.payload.status },
+      };
     case C.ADD_COMMENTS:
       return {
         ...state,
@@ -48,6 +58,20 @@ function postsReducer(state = initState, action) {
           (comment) => comment.altId !== action.payload
         ),
       };
+    case C.EDITED_COMMENT:
+      return {
+        ...state,
+        comments: state.comments.map((comment) =>
+          comment.altId === action.payload.id
+            ? {
+                ...comment,
+                comment: action.payload.edit,
+                addedEn: new Date().toLocaleString(),
+              }
+            : { ...comment }
+        ),
+      };
+
     default:
       return state;
   }

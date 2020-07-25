@@ -31,10 +31,10 @@ const useStyles = makeStyles({
     background: "beige",
   },
 });
+// mock auth
+const { uuid, userdept } = { uuid: 20, userdept: 5 };
 
 const Post = () => {
-  // mock auth
-  const { uuid, userdept } = { uuid: 20, userdept: 5 };
   const [reloading, setReloading] = React.useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -100,7 +100,15 @@ const Post = () => {
       fetchRecentPosts(uuid);
     }, 2000);
   };
-
+  const handleResolve = (status) => {
+    axios
+      .get(
+        `./server/posts/posts.php?resolveissue=true&uuid=${uuid}&issue=${issue}&status=${status}`
+      )
+      .then((res) => console.log(res))
+      .catch((error) => console.log(error));
+    dispatch(postactions.resolveIssue({ status, altId: issue }));
+  };
   React.useEffect(() => {
     // if the post id is already on router params
     if (issue) {
@@ -136,11 +144,12 @@ const Post = () => {
             {" "}
             {post && "issue" in post ? (
               <>
-                <PostDetails {...post} />
+                <PostDetails {...post} handleResolve={handleResolve} />
                 <Comments
                   comments={comments}
                   sendValue={getValue}
                   post_id={issue}
+                  handler_id={post.handler_id}
                 />
               </>
             ) : (
@@ -179,7 +188,10 @@ const PostDetails = ({
   subject,
   message,
   addedBy,
+  handler_id,
+  status,
   addedon,
+  handleResolve,
 }) => (
   <Box className="my-2 p-2">
     <h5> {subject}</h5>
@@ -187,12 +199,7 @@ const PostDetails = ({
     <Box>
       <Typography> {message}</Typography>
     </Box>
-    <Box>
-      <small className="alert alert-info float-right">
-        {" "}
-        Added by {addedBy} on {addedon}
-      </small>
-    </Box>
+
     <Divider />
     <Box>
       <h6>Name: {clientName}</h6>
@@ -202,22 +209,36 @@ const PostDetails = ({
       <h6>Company/location: {clientOrg}</h6>
     </Box>
     <Box>
-      <ButtonGroup>
-        <Button
-          variant="contained"
-          color="primary"
-          className="bg-info mr-1 my-2"
-        >
-          Put in progress
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          className="bg-success ml-1 my-2"
-        >
-          Resolve
-        </Button>
-      </ButtonGroup>
+      <small>
+        {" "}
+        Added by {addedBy} on {addedon}
+      </small>
+      <Typography>Status: {+status}</Typography>
+    </Box>
+    <Box>
+      {/* Restriction */}
+      {handler_id === uuid ? (
+        <ButtonGroup className="my-2">
+          <Button
+            variant={+status === 1 ? "contained" : "outlined"}
+            size="small"
+            color="primary"
+            className="mr-2 my-2"
+            onClick={() => handleResolve(1)}
+          >
+            {+status === 1 ? "In Progress" : "Put in progress"}
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="primary"
+            className="bg-success ml-1 my-2"
+            onClick={() => handleResolve(2)}
+          >
+            {+status === 2 ? "Resolved" : "Resolve"}
+          </Button>
+        </ButtonGroup>
+      ) : null}
     </Box>
   </Box>
 );

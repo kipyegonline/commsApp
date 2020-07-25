@@ -171,15 +171,16 @@ function Users() {
           {editor ? (
             <AddUser
               depts={departments}
+              isEditing={editor}
               Edit={Edit}
               title="Edit User "
               url="./server/users/users.php?edituser=true"
-              closeEditor={setEditor}
               updateData={editData}
             />
           ) : (
             <AddUser
               depts={departments}
+              isEditing={editor}
               title="Add User"
               url="./server/users/users.php?adduser=true"
             />
