@@ -43,7 +43,7 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
       data,
       dataType: "json",
     })
-      .then((res) => console.log(res))
+      .then((res) => res)
       .catch((error) => console.error(error));
   };
   const handleDelete = (id) => {
@@ -175,7 +175,7 @@ const CommentsList = ({ list, getEdited, deleteKey, handler_id }) => {
             setEditing={setEditing}
           />
           {/* Restriction */}
-          {handler_id === uuid ? (
+          {Number(handler_id) === uuid ? (
             <>
               <FormHelperText>
                 <IconButton onClick={() => deleteKey(item.altId)}>

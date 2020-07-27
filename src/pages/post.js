@@ -1,7 +1,8 @@
 import React from "react";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
+import Link from "next/link";
 import axios from "axios";
-import { makeStyles } from "@material-ui/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import { useDispatch, useSelector, ReactReduxContext } from "react-redux";
 import {
   Box,
@@ -71,7 +72,13 @@ const Post = () => {
       .get(
         `./server/posts/posts.php?fetchcomments=true&uuid=${userId}& postId=${postId}`
       )
-      .then((res) => dispatch(postactions.addComments(res.data)))
+      .then((res) => {
+        if (!res.data) {
+          throw new Error("No payload attached");
+        }
+
+        dispatch(postactions.addComments(res.data));
+      })
       .catch((error) => console.error("fetch comments:", error));
   };
   // fetch issues
@@ -79,9 +86,16 @@ const Post = () => {
   const fetchRelatedIssues = (uuid) => {
     axios
       .get(`./server/issues/issues.php?fetchRelatedIssues=true&&uuid=${uuid}`)
-      .then((res) => res.data.map((item) => ({ ...item, selected: false })))
+      .then((res) => {
+        console.log("issues", res);
+        if (res.data) {
+          if (res.data.length)
+            return res.data.map((item) => ({ ...item, selected: false }));
+        }
+        throw new Error("No payload attached");
+      })
       .then((res) => setRelated(res))
-      .catch((error) => console.error("fetch posts:", error));
+      .catch((error) => console.error("fetch issues:", error));
   };
 
   // fetch 5 recent posts minus the one under review
@@ -91,7 +105,14 @@ const Post = () => {
       .get(
         `./server/posts/posts.php?fetchrecentpost=true&uuid=${userId}&current=${issue}&recent=${recent}`
       )
-      .then((res) => res.data.map((item) => ({ ...item, selected: false })))
+      .then((res) => {
+        if (res.data) {
+          if (res.data.length)
+            return res.data.map((item) => ({ ...item, selected: false }));
+        }
+
+        throw new Error("No payload attached");
+      })
       .then((res) => dispatch(postactions.addrecentposts(res)))
 
       .catch((error) => console.error("fetch recent posts:", error));
@@ -128,7 +149,6 @@ const Post = () => {
       )
       .then((res) => {
         if (status === 2) fetchRecentPosts(uuid);
-        console.log(res, "resolved");
       })
       .catch((error) => console.log(error));
     dispatch(postactions.resolveIssue({ status, altId: issue }));
@@ -139,15 +159,18 @@ const Post = () => {
       // Get clicked post since its already on redux store
       dispatch(postactions.getPost(issue));
       // fetch posts comments,if any
-      fetchComments(issue);
+      fetchComments(uuid, issue);
       // store local storage for purposes of page reload and all that
       localStorage.setItem("postAltid", JSON.stringify(issue));
+      // fetch issues and recent posts pole pole
+      setTimeout(() => {
+        fetchRelatedIssues(uuid);
+        fetchRecentPosts(uuid, issue, true);
+      }, 2000);
+    } else {
+      Router.push("/posts");
     }
-    // fetch issues and recent posts pole pole
-    setTimeout(() => {
-      fetchRelatedIssues(uuid);
-      fetchRecentPosts(uuid);
-    }, 2000);
+
     // listen to load event, reload that is
     window.addEventListener("load", handleReload);
   }, []);
@@ -155,15 +178,14 @@ const Post = () => {
   const getValue = (data) => {
     dispatch(postactions.addComment(data));
   };
-  console.log("The post", post, issue);
 
   return (
-    <Layout title={title}>
+    <Layout title={post.clientName || "Post"}>
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
           <Grid item xs={false} md={3}>
             <Typography variant="h6">Recent issues</Typography>
-            <RelatedIssues relatedissues={[]} sendRelated={getRelated} />
+            <RelatedIssues relatedissues={issues} sendRelated={getRelated} />
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
             {" "}
@@ -173,7 +195,7 @@ const Post = () => {
                 <Comments
                   comments={comments}
                   sendValue={getValue}
-                  post_id={issue}
+                  post_id={post.id}
                   handler_id={post.handler_id}
                 />
               </>
@@ -241,13 +263,13 @@ const PostDetails = ({
     <Box>
       <small>
         {" "}
-        Added by {addedBy} on {addedon}
+        Added by {<b>{+handler_id === uuid ? "You" : addedBy} </b>} on {addedon}
       </small>
       <Typography>Status: {+status}</Typography>
     </Box>
     <Box>
       {/* Restriction */}
-      {handler_id === uuid ? (
+      {Number(handler_id) === uuid ? (
         <ButtonGroup className="my-2">
           <Button
             variant={+status === 1 ? "contained" : "outlined"}
@@ -274,7 +296,6 @@ const PostDetails = ({
 );
 
 const RecentPosts = ({ recent, sendRecent }) => {
-  console.log("recent", recent);
   return (
     <List align="left">
       {recent.map((post) => (
@@ -283,13 +304,18 @@ const RecentPosts = ({ recent, sendRecent }) => {
           button
           divider
           selected
-          color={post.selected ? "secondary" : ""}
+          className={post.selected ? "bg-danger text-white" : "bg-light"}
           align="right"
           onClick={() => sendRecent(post)}
         >
-          <ListItemText primary={post.subject} secondary={post.issue} />
+          <ListItemText primary={post.subject} secondary={post.clientName} />
         </ListItem>
       ))}
+      <ListItem>
+        <Link href="/posts">
+          <a> Back to posts</a>
+        </Link>
+      </ListItem>
     </List>
   );
 };
@@ -303,7 +329,7 @@ const RelatedIssues = ({ relatedissues, sendRelated }) => {
           button
           divider
           selected
-          color={item.selected ? "secondary" : ""}
+          className={item.selected ? "bg-danger text-white" : "bg-light"}
           align="right"
           onClick={() => sendRelated(item.issue)}
         >

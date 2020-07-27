@@ -90,14 +90,12 @@ function AddUser({
       setUserPhone(Edit.userphone);
       setUserTitle(Edit.usertitle);
       setUserEmail(Edit.useremail);
-      setUserpassword(Edit.userpassword);
+      setUserpassword("littlefireseverywhere"); // no need to edit password but we need to pass the validation
       setuserDept(Edit.userdept);
     }
   }, [Edit]);
   const handleSubmit = (e) => {
     e.preventDefault();
-    // put some band aid to password while editing
-    editing && setUserpassword("littlefireseverywhere");
 
     if (username.trim().length < 5 || username.indexOf(" ") < 0) {
       username.trim().length < 5

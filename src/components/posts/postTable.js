@@ -23,27 +23,30 @@ import {
   Avatar,
   Card,
   CardActions,
+  Typography,
 } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Pagination from "@material-ui/lab/Pagination";
 import DisplayIssues, { DisplayUsers, RangeInput } from "./post";
+import { display } from "@material-ui/system";
 
-//mock auth
+// mock auth
 const { uuid, userdept } = { uuid: 20, userdept: 5 };
 
 function PostsTable({ posts = [], setTicks = (f) => f }) {
-  const perpage = 10;
-  const pages = Math.ceil(posts.length / 10);
+  const perpage = posts.length >= 10 ? 10 : posts.length;
+  const pages = Math.ceil(posts.length / perpage);
   const [current, setCurrent] = React.useState(0);
   const handleChange = (e, page) => {
-    console.log(e);
     setCurrent(page - 1);
   };
+
   const start = current * perpage;
   const end = current * perpage + perpage;
 
   return (
     <>
+      <Typography>{posts.length} issues</Typography>
       <TableContainer className="table-responsive">
         <Table className="table">
           <TableHead>
@@ -88,10 +91,10 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
           <TableBody>
             {posts.slice(start, end).map((post, i) => (
               <TableBodyInfo
-                key={post.altId}
+                key={post.id}
                 {...post}
                 setTicks={setTicks}
-                index={i + start}
+                index={i}
               />
             ))}
           </TableBody>
@@ -184,7 +187,9 @@ const TableBodyInfo = ({
         </Button>
       </TableCell>
       <TableCell>{addedon}</TableCell>
-      <TableCell>{addedBy}</TableCell>
+      <TableCell>
+        <b>{+handler_id === uuid ? "You" : addedBy} </b>
+      </TableCell>
       <TableCell>
         <Button
           variant="contained"

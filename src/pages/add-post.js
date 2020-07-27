@@ -276,7 +276,6 @@ function AddPost() {
           console.log("res", res);
           if (res.status === 200) {
             setSuccess(res.msg);
-            btn.current.disabled = false;
 
             // reset everything
             setTimeout(() => {
@@ -295,6 +294,7 @@ function AddPost() {
               setClientDept([]);
               holder = [];
               form.current.reset();
+              btn.current.disabled = false;
             }, 2000);
           } else {
             throw new Error(res.msg);

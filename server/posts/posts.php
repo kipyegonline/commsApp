@@ -17,6 +17,7 @@ if(isset($_GET['addposts']) && $_GET["addposts"]=="true"){
    $clientDept=$_POST["clientDept"];
    $addedBy=$_POST["addedBy"];
    $addedon=$_POST["addedon"];
+   $altId=$_POST["altId"];
    $status=0;
 
   
@@ -25,7 +26,8 @@ if(isset($_GET['addposts']) && $_GET["addposts"]=="true"){
        echo json_encode(["status"=>201, "msg"=>"Missing fields"]);
    }else{
      //insert posts to Database
-    $postid= $post->insertPosts($clientName,$clientEmail, $clientPhone,$clientOrg,$message,$subject, $addedBy,$addedon,$status);
+    $postid= $post->insertPosts($clientName,$clientEmail,$clientPhone,$clientOrg,$message,$subject, $addedBy,$addedon,$altId,$status);
+   
  if($postid>0){
    
     //extract handlers from the post string as an array
@@ -128,8 +130,16 @@ if(isset($_GET['fetchbyusers']) && $_GET["fetchbyusers"]=="true"){
 //fetch recent posts
 if(isset($_GET['fetchrecentpost']) && $_GET["fetchrecentpost"]=="true"){
  $uuid=$_GET["uuid"];
-if(isset($uuid)){
-$post->fetchRecentPosts($uuid);
+ $current=$_GET["current"];
+if(isset($uuid) && isset($current)){
+$data=$post->fetchRecentPosts($uuid,$current);
+if(count($data)>0){
+    echo json_encode($data);
+}else{
+ echo json_encode([]);  
+}
+
+
 }
    
 
@@ -141,27 +151,64 @@ if(isset($_GET['resolveissue']) && $_GET["resolveissue"]=="true"){
    $issueId=$_GET["issue"];
    $status=$_GET["status"];
    if(isset($uuid) && isset($issueId)&& isset($status)){
-      $post->resolveIssue($uuid,$issueId,$status);
+      
+      $res=$post->resolveIssue($uuid,$issueId,$status);
+      if($res>0){
+         echo sendFeedback(200,"Resolved");
+      }else{
+ echo sendFeedback(200,"Error resolving that");
+      }
    }
 }
+/**fetch relate */
 
+if(isset($_GET['fetchRelatedIssues']) && $_GET["fetchRelatedIssues"]=="true"){
+$uuid=$_GET["uuid"];
+
+if(isset($uuid)){
+   $data=$post->fetchRelatedIssues($uuid);
+   if(count($data)>0){
+    echo json_encode($data);
+   }else{
+    echo json_encode([]);
+   }
+   
+}
+}
 /****** Commenst section */
 //fetch comments
-if(isset($_GET['fetchComments']) && $_GET["fetchComments"]=="true"){
+if(isset($_GET['fetchcomments']) && $_GET["fetchcomments"]=="true"){
  
    $uuid=$_GET["uuid"];
    $postId=$_GET["postId"];
    if(isset($uuid) && isset($postId)){
-      $post->fetchComments($postId,$uuid);
+     $data= $post->fetchComments($postId,$uuid);
+     echo json_encode($data);
    }
 
 }
 
 //add commet
-if(isset($_GET['addComment']) && $_GET["addComment"]=="true"){
-   $id=$_GET["id"];
-   $uuid=$_GET["uuid"];
+if(isset($_GET['addcomment']) && $_GET["addcomment"]=="true"){
+  
+   $comment=$_POST["comment"];
+   $altId=$_POST["altId"];
+   $uuid=$_POST["uuid"];
+   $postId=$_POST["post_id"];
+   $addedon=$_POST["addedEn"];
 
+
+if(!empty($comment) || !empty($uuid) || !empty($altId) || !empty($postId)){
+ 
+$feedback=$post->addComment($altId,$postId,$comment,$uuid,$addedon);
+if($feedback>0){
+    echo sendFeedback(200,"Comment added");
+}else{
+  echo sendFeedback(201,"Error adding comment $feedback"); 
+}
+}else{
+   echo sendFeedback(201,"No arguments provided");
+}
 }
 
 //delete comment
@@ -169,6 +216,7 @@ if(isset($_GET['addComment']) && $_GET["addComment"]=="true"){
 if(isset($_GET['deleteComment']) && $_GET["deleteComment"]=="true"){
    $id=$_GET["id"];
    $uuid=$_GET["uuid"];
+   
    if(isset($id) && isset($uuid)){
 $post->deleteComment($id,$uuid);
    }
@@ -176,5 +224,17 @@ $post->deleteComment($id,$uuid);
 }
 //Edit
 if(isset($_GET['editComment']) && $_GET["editComment"]=="true"){
+
+   $comment=$_POST["edit"];
+   $altId=$_POST["id"];
+   $addedon=$_POST["addedEn"];
+   if(!empty($comment) || !empty($altId)){
+$id=$post->handleEdit($altId,$addedon,$comment);
+if($id>0){
+   echo sendFeedback(200,"Comment updated");
+}else{
+   echo sendFeedback(201,"Error updating comment.");
+}
+   }
 
 }

@@ -19,7 +19,7 @@ import Pagination from "@material-ui/lab/Pagination";
 
 function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
   const [current, setCurrent] = React.useState(0);
-  const perpage = 10;
+  const perpage = users.length > 10 ? 10 : users.length;
   const pages = Math.ceil(users.length / perpage);
   const start = current * perpage;
   const end = current * perpage + perpage;
