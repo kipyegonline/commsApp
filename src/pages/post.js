@@ -85,7 +85,7 @@ const Post = () => {
 
   const fetchRelatedIssues = (uuid) => {
     axios
-      .get(`./server/issues/issues.php?fetchRelatedIssues=true&&uuid=${uuid}`)
+      .get(`./server/posts/posts.php?fetchRelatedIssues=true&&uuid=${uuid}`)
       .then((res) => {
         console.log("issues", res);
         if (res.data) {
@@ -130,8 +130,9 @@ const Post = () => {
     }, 2000);
   };
   //when a recent post is clicked
-  const getRecent = (post) => {
-    dispatch(postactions.recentClicked(post));
+  const getRecent = (clickedpost) => {
+    dispatch(postactions.recentClicked(clickedpost));
+    fetchComments(uuid, clickedpost.altId);
   };
   const getRelated = (issue) => {
     let issues = related.map((item) =>
@@ -140,7 +141,7 @@ const Post = () => {
         : { ...item, slected: false }
     );
     setRelated(issues);
-    fetchRecentPosts(uuid, issue.issueId, false);
+    fetchRecentPosts(uuid, issue, false);
   };
   const handleResolve = (status) => {
     axios
@@ -148,7 +149,7 @@ const Post = () => {
         `./server/posts/posts.php?resolveissue=true&uuid=${uuid}&issue=${issue}&status=${status}`
       )
       .then((res) => {
-        if (status === 2) fetchRecentPosts(uuid);
+        if (status === 2) fetchRecentPosts(uuid, issue, true);
       })
       .catch((error) => console.log(error));
     dispatch(postactions.resolveIssue({ status, altId: issue }));
@@ -241,6 +242,7 @@ const PostDetails = ({
   message,
   addedBy,
   handler_id,
+adder,
   status,
   addedon,
   handleResolve,
@@ -263,7 +265,7 @@ const PostDetails = ({
     <Box>
       <small>
         {" "}
-        Added by {<b>{+handler_id === uuid ? "You" : addedBy} </b>} on {addedon}
+        Added by {<b>{+adder === uuid ? "You" : addedBy} </b>} on {addedon}
       </small>
       <Typography>Status: {+status}</Typography>
     </Box>

@@ -129,12 +129,13 @@ const TableList = ({
   usertitle,
   deleteKey,
   editKey,
+  dept,
   index,
 }) => (
   <TableRow>
     <TableCell>{index + 1}</TableCell>
     <TableCell>{username}</TableCell>
-    <TableCell>{userdept}</TableCell>
+    <TableCell>{dept}</TableCell>
     <TableCell>{usertitle}</TableCell>
     <TableCell>{useremail}</TableCell>
     <TableCell>{userphone}</TableCell>

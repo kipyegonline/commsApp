@@ -1,9 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Badge from "@material-ui/core/Badge";
+import { Badge, Grid, Divider } from "@material-ui/core";
 import Skeleton from "@material-ui/lab/Skeleton";
+import { Alert, AlertTitle } from "@material-ui/lab";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import MailIcon from "@material-ui/icons/Mail";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Layout from "../components/Layout";
 
 const useStyles1 = makeStyles((theme) => ({
@@ -19,19 +22,50 @@ export default function About() {
 
   return (
     <Layout>
-      <div className={classes.root}>
-        <Badge badgeContent={4} color="primary">
-          <MailIcon />
-        </Badge>
-        <Badge badgeContent={4} max={10} color="secondary">
-          <MailIcon />
-        </Badge>
-        <Badge badgeContent={4} color="error">
-          <MailIcon />
-        </Badge>
-        <CircularProgress color="primary" />
-        <Skeleton width={200} height={300} animation="wave" variant="rect" />
-      </div>
+      <Grid container justify="flex-start" alignContent="flex-end">
+        <Grid xs={12} md={4} lg={4} item>
+          {" "}
+          <div className={classes.root}>
+            <Badge badgeContent={4} color="primary">
+              <MailIcon />
+            </Badge>
+            <Badge badgeContent={4} max={10} color="secondary">
+              <MailIcon />
+            </Badge>
+            <Badge badgeContent={4} color="error">
+              <MailIcon />
+            </Badge>
+            <CircularProgress color="primary" size={66} thickness={3} />
+            <Skeleton
+              width={200}
+              height={300}
+              animation="wave"
+              variant="rect"
+            />
+          </div>
+          <Divider orientation="vertical" flexItem />
+        </Grid>
+
+        <Grid xs={12} md={4} lg={4} item>
+          <BasicButtonGroup />
+        </Grid>
+
+        <Grid xs={12} md={4} lg={4} item>
+          <DescriptionAlerts />
+          <Divider orientation="vertical" flexItem />
+        </Grid>
+      </Grid>
+      <Grid container justify="flex-start" alignItems="center">
+        <Grid xs={12} md={4} lg={4} item>
+          K
+        </Grid>
+        <Grid xs={12} md={4} lg={4} item>
+          L
+        </Grid>
+        <Grid xs={12} md={4} lg={4} item>
+          M
+        </Grid>
+      </Grid>
     </Layout>
   );
 }
@@ -53,6 +87,80 @@ export function Animations() {
   );
 }
 
+const useStyles3 = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    "& > *": {
+      margin: theme.spacing(1),
+    },
+  },
+}));
+export function BasicButtonGroup() {
+  const classes = useStyles3();
+
+  return (
+    <div className={classes.root}>
+      <ButtonGroup color="primary" aria-label="outlined primary button group">
+        <Button>One</Button>
+        <Button>Two</Button>
+        <Button>Three</Button>
+      </ButtonGroup>
+      <ButtonGroup
+        variant="contained"
+        color="primary"
+        aria-label="contained primary button group"
+      >
+        <Button>One</Button>
+        <Button>Two</Button>
+        <Button>Three</Button>
+      </ButtonGroup>
+      <ButtonGroup
+        variant="text"
+        color="primary"
+        aria-label="text primary button group"
+      >
+        <Button>One</Button>
+        <Button>Two</Button>
+        <Button>Three</Button>
+      </ButtonGroup>
+    </div>
+  );
+}
+const useStyles4 = makeStyles((theme) => ({
+  root: {
+    width: "100%",
+    "& > * + *": {
+      marginTop: theme.spacing(1),
+    },
+  },
+}));
+
+function DescriptionAlerts() {
+  const classes = useStyles4();
+
+  return (
+    <div className={classes.root}>
+      <Alert severity="error">
+        <AlertTitle>Error</AlertTitle>
+        This is an error alert — <strong>check it out!</strong>
+      </Alert>
+      <Alert severity="warning">
+        <AlertTitle>Warning</AlertTitle>
+        This is a warning alert — <strong>check it out!</strong>
+      </Alert>
+      <Alert severity="info">
+        <AlertTitle>Info</AlertTitle>
+        This is an info alert — <strong>check it out!</strong>
+      </Alert>
+      <Alert severity="success">
+        <AlertTitle>Success</AlertTitle>
+        This is a success alert — <strong>check it out!</strong>
+      </Alert>
+    </div>
+  );
+}
 /**
  * /import React from 'react';
 import PropTypes from 'prop-types';
@@ -717,3 +825,30 @@ export default function IconAlerts() {
 }
 
    */
+// Avata
+/*
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import Avatar from "@material-ui/core/Avatar";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+    "& > *": {
+      margin: theme.spacing(1),
+    },
+  },
+}));
+
+export default function ImageAvatars() {
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+      <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
+    </div>
+  );
+}
+*/

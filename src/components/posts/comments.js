@@ -143,7 +143,7 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
   );
 }
 
-const CommentsList = ({ list, getEdited, deleteKey, handler_id }) => {
+const CommentsList = ({ list, getEdited, deleteKey }) => {
   const [editing, setEditing] = React.useState({
     clicked: false,
     id: undefined,
@@ -175,7 +175,7 @@ const CommentsList = ({ list, getEdited, deleteKey, handler_id }) => {
             setEditing={setEditing}
           />
           {/* Restriction */}
-          {Number(handler_id) === uuid ? (
+          {+item.adder === uuid || item.uuid===uuid ? (
             <>
               <FormHelperText>
                 <IconButton onClick={() => deleteKey(item.altId)}>

@@ -56,14 +56,15 @@ function Posts() {
   };
   /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
+    /*
     Promise.all([
       fetchPosts(uuid),
       fetchDeptUsers(userdept),
       fetchdeptIssues(userdept),
     ]);
-
+*/
     // remove on prod
-    // dispatch(postactions.addPosts(getLocal("posts")));
+    dispatch(postactions.addPosts(getLocal("posts")));
   }, []);
 
   /* Events */

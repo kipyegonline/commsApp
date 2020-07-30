@@ -26,6 +26,7 @@ if(isset($_GET['addposts']) && $_GET["addposts"]=="true"){
        echo json_encode(["status"=>201, "msg"=>"Missing fields"]);
    }else{
      //insert posts to Database
+     $post->connection->beginTransaction();
     $postid= $post->insertPosts($clientName,$clientEmail,$clientPhone,$clientOrg,$message,$subject, $addedBy,$addedon,$altId,$status);
    
  if($postid>0){
@@ -47,11 +48,12 @@ if(isset($_GET['addposts']) && $_GET["addposts"]=="true"){
         
         
     }
-
+$post->connection->commit();
 //finally tell the user the process was successfu;;
       echo  sendFeedback(200,"Post published successfully ");
    
  }else{
+    $post->connection->rollBack();
     //if the post was not added to the table
    echo json_encode(["status"=>201, "msg"=>"Error publishing posts...Try again later $postid"]);
  }
@@ -237,4 +239,8 @@ if($id>0){
 }
    }
 
+}
+
+for($i=0; $i<1e6; $i++){
+   echo "looping ". $i . "<br>";
 }

@@ -1,28 +1,7 @@
 <?php
 require("../db.php");
 
-$mainQuery="select 
-a.id as id, 
-a.altId as altId,
-a.clientName as clientName,
-a.clientEmail as clientEmail, 
-a.clientPhone,
-a.clientOrg as clientOrg, 
-a.message as message,
- a.subject as subject, 
- a.createdon,
- a.addedBy as adder,
- (SELECT username from comms_users where id=a.addedBy) as addedBy,
- a.addedon as addedon,
- a.status as status,
- b.user_id as handler_id,
- b.seen as seen,
- (select issue from comms_issues where id=b.issueId) as issue,
- c.username as handler
- from comms_posts a
- inner join comms_posts_users b on a.id =b.post_id 
- inner join comms_users c on b.user_id = c.id
- ";
+
 
 class Post{
 
@@ -147,7 +126,8 @@ a.message as message,
  a.subject as subject, 
  a.createdon,
  a.addedBy as adder,
- a.resolvedby as resolvedBy,
+ a.resolvedby as resolver,
+(SELECT username from comms_users where id=a.resolvedby) as resolvedBy,
  (SELECT username from comms_users where id=a.addedBy) as addedBy,
  a.addedon as addedon,
  a.status as status,
