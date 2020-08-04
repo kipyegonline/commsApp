@@ -139,12 +139,9 @@ a.message as message,
  inner join comms_posts_users b on a.id =b.post_id 
  inner join comms_users c on b.user_id = c.id  " . $ext;
 }
-public function fetchposts($id){
- $query=" where b.user_id={$id} ORDER BY a.status, a.id desc " ;
-  $sql=self::fetchQuery($query);
- //
-
-  try{
+//fet data
+private function  fetchData($sql){
+ try{
 
     $stmt=$this->connection->query($sql);
 
@@ -161,7 +158,28 @@ public function fetchposts($id){
    echo $e->getMessage();
     
   }
+}
+public function fetchposts($id){
+ $query=" where b.user_id={$id} ORDER BY a.status, a.id desc " ;
+  $sql=self::fetchQuery($query);
+ //
+return $this->fetchData($sql);
+ 
   
+
+}
+public function fetchbySearch($keyword,$uuid){
+  $query=" where 
+  a.clientName LIKE '%$keyword%' OR
+  a.clientEmail  LIKE '$keyword%' OR  
+  a.clientPhone LIKE '$keyword%' OR
+  a.clientOrg LIKE '$keyword%' OR
+  a.subject LIKE  '$keyword%' OR
+   c.username LIKE  '%$keyword%'  
+  ORDER BY a.status, a.id desc " ;
+  $sql=self::fetchQuery($query);
+ //
+return $this->fetchData($sql);
 
 }
 public function fetchbyStatus($id,$uuid){
@@ -170,25 +188,7 @@ public function fetchbyStatus($id,$uuid){
   
   $query= "where b.user_id={$uuid} and a.status='{$id}' ORDER BY a.id desc"  ;
   $sql=Post::fetchQuery($query);
- //
-
-  try{
-
-    $stmt=$this->connection->query($sql);
-
-    if($stmt){
-      $data=[];
-      while($row=$stmt->fetch(PDO::FETCH_ASSOC)){
-        //$data["key"]=$id;
-        $data[]=$row;
-      }
-      return $data;
-    }
-  }
-  catch(PDOException $e){
-   echo $e->getMessage();
-    
-  }
+ return $this->fetchData($sql);
 }
 
 public function setTicks($id,$uuid){
@@ -200,96 +200,28 @@ public function fetchbyIssues($id,$uuid){
 
   $query="where b.user_id={$uuid} and b.issueId='{$id}' ORDER BY a.id desc"  ;
   $sql=Post::fetchQuery($query);
- //
-
-  try{
-
-    $stmt=$this->connection->query($sql);
-
-    if($stmt){
-      $data=[];
-      while($row=$stmt->fetch(PDO::FETCH_ASSOC)){
-        //$data["key"]=$id;
-        $data[]=$row;
-      }
-      return $data;
-    }
-  }
-  catch(PDOException $e){
-   echo $e->getMessage();
-    
-  }
+ return $this->fetchData($sql);
 
 }
 public function fetchbyUsers($id){
     //concat query to static fetch query method  
   $query= "where b.user_id='{$id}' ORDER BY a.id desc";
   $sql=Post::fetchQuery($query);
- //
-  try{
-
-    $stmt=$this->connection->query($sql);
-
-    if($stmt){
-      $data=[];
-      while($row=$stmt->fetch(PDO::FETCH_ASSOC)){
-        //$data["key"]=$id;
-        $data[]=$row;
-      }
-      return $data;
-    }
-  }
-  catch(PDOException $e){
-   echo $e->getMessage();
-    
-  }
+ return $this->fetchData($sql);
   
 }
 public function fetchRecentPosts($uuid,$current){
   $id=$this->fetchId($current);
   $query=" where  b.user_id={$uuid} AND (a.status=0 OR a.status=1) AND a.id !=$id ORDER BY a.id desc LIMIT 5" ;
   $sql=self::fetchQuery($query);
-   try{
-
-    $stmt=$this->connection->query($sql);
-
-    if($stmt){
-      $data=[];
-      while($row=$stmt->fetch(PDO::FETCH_ASSOC)){
-        //$data["key"]=$id;
-        $data[]=$row;
-      }
-      return $data;
-    }
-  }
-  catch(PDOException $e){
-   echo $e->getMessage();
-    
-  }
+  return $this->fetchData($sql);
  
 }
 public function fetchRelatedIssues($uuid){
   $query=" select a.issue as issue ,count(b.post_id) as issuecount, a.id as issueId  from
 comms_issues a inner join comms_posts_users b on a.id=b.issueId where b.user_id=$uuid  GROUP BY a.id
  order by issuecount";
-
- try{
-
-    $stmt=$this->connection->query($query);
-
-    if($stmt){
-      $data=[];
-      while($row=$stmt->fetch(PDO::FETCH_ASSOC)){
-        //$data["key"]=$id;
-        $data[]=$row;
-      }
-      return $data;
-    }
-  }
-  catch(PDOException $e){
-   echo $e->getMessage();
-    
-  }
+return $this->fetchData($quey);
 }
 
 public function addComment($altId,$postId,$comment,$uuid,$addedon){
@@ -337,6 +269,7 @@ public function fetchComments($postId,$uuid){
   a.post_id as post_id,
   a.comment as comment,
   a.addedBy as handler_id,
+  a.addedBy as adder,
   a.addedon as addedEn,
   a.createdon as createdon,
   b.username as addedBy 

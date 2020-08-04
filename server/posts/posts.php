@@ -112,7 +112,13 @@ if(isset($_GET['handleSearch']) && $_GET["handleSearch"]=="true"){
    $keyword=$_GET["keyword"];
     $uuid=$_GET["uuid"];
    if(isset($keyword) && isset($uuid)){
-      $post->fetchbySearch($id,$uuid);
+      $data=$post->fetchbySearch($keyword,$uuid);
+      if(count($data)>0){
+      echo json_encode($data);
+      }else{
+        echo  sendFeedback(201,"No search results...");
+      }
+      
    }
 }
 
@@ -240,7 +246,15 @@ if($id>0){
    }
 
 }
-
-for($i=0; $i<1e6; $i++){
-   echo "looping ". $i . "<br>";
+/*
+$analytics=["16-13","18-20",'19-20',"23-12","56-34"];
+$res=array_search("18-20",$analytics);
+if($res){
+   echo "Iko";
+}else{
+   echo "Hamna";
 }
+echo "<br/>";
+
+$st= implode("*",$analytics);
+echo strlen($st);*/

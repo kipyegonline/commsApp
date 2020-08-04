@@ -1,27 +1,34 @@
 import React from "react";
-import { Row, Col } from "reactstrap";
+
 import {
   Grid,
-  GridList,
   Table,
   TableBody,
   TableHead,
   TableRow,
   TableCell,
   CircularProgress,
+  Button,
   Box,
 } from "@material-ui/core";
 import Skeleton from "@material-ui/lab";
 import { makeStyles } from "@material-ui/core/styles";
 import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
-import AddUser, { AddDept } from "../components/users/addUsers";
+import AddUser, { AddDept, SearchUser } from "../components/users/addUsers";
 import ShowUsers from "../components/users/showusers";
 import Layout from "../components/Layout";
-import { fetchData } from "../lib/apicalls";
-import * as actions from "../redux/usersReducer/actions";
+import {
+  fetchData,
+  fetchStats,
+  deleteUser,
+  editUser,
+  getSelected,
+  fetchLocalData,
+  fetchSearch,
+} from "../lib/api/users";
+
 import * as depts from "../redux/departments/actions";
-import { getLocal, handleLocalStorage } from "../components/helpers";
+import * as actions from "../redux/usersReducer/actions";
 
 const useStyles = makeStyles({
   root: {
@@ -49,79 +56,58 @@ const useStyles = makeStyles({
     width: "100%",
   },
 });
+
 function Users() {
   // initiliazie classes and state
   const classes = useStyles();
-  const dispatch = useDispatch();
+
   const [Edit, setEdit] = React.useState({});
   const [editor, setEditor] = React.useState(false);
 
-  const fetchStats = (url) => {
-    axios
-      .get(url)
-      .then((res) => {
-        console.log(res);
-        dispatch(actions.setTableUsers(res.data));
-      })
-      .catch((error) => console.log("stats err", error));
+  const dispatch = useDispatch();
+  const fetchAllDepts = () => {
+    fetchData(
+      "../server/departments/departments.php?fetchdepts=true"
+    ).then((res) => dispatch(depts.addDepts(res)));
   };
-
+  const fetchAllUsers = () => {
+    fetchData("./server/users/users.php?fetchusers=true").then((res) =>
+      dispatch(actions.addUser(res))
+    );
+  };
   React.useEffect(() => {
     // fetch data
-    /*
-    // remove on prod
-    dispatch(
-      actions.addUser(
-        getLocal("users").map((item) => ({
-          ...item,
-          selected: false,
-        }))
-      )
-    );
-    dispatch(
-      depts.addDepts(
-        getLocal("depts").map((item) => ({
-          ...item,
-          selected: false,
-        }))
-      )
-    );
-*/
+
+    /*fetchLocalData(dispatch);*/
 
     // get the departments and users
 
     Promise.all([
-      fetchData(
-        "../server/departments/departments.php?fetchdepts=true"
-      ).then((res) => dispatch(depts.addDepts(res))),
-      fetchData("./server/users/users.php?fetchusers=true").then((res) =>
-        dispatch(actions.addUser(res))
-      ),
-      fetchStats("../server/users/users.php?fetchuserdeptstats=true"),
+      fetchAllDepts(),
+      fetchAllUsers(),
+      fetchStats("../server/users/users.php?fetchuserdeptstats=true", dispatch),
     ]);
   }, []);
 
   // hit the redux store
-  const { departments, users, tableUsers, sectionUsers: section } = useSelector(
-    (state) => ({
-      departments: state.departments.departments,
-      users: state.users.users,
-      tableUsers: state.users.userStats,
-      sectionUsers: state.users.sectionUsers,
-    })
-  );
-  // events
+  const {
+    departments,
+    users,
+    tableUsers,
+    sectionUsers: section,
+    department,
+  } = useSelector((state) => ({
+    departments: state.departments.departments,
+    users: state.users.users,
+    tableUsers: state.users.userStats,
+    sectionUsers: state.users.sectionUsers,
+    department: state.users.department,
+  }));
+  // event handlers
 
+  // delete user
   const handleDelete = (id) => {
-    if (confirm("Delete user?")) {
-      dispatch(actions.deleteUser(id));
-      fetch(`./server/users/users.php?deleteuser=true&userId=${id}`)
-        .then((res) => res.json())
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((error) => console.log(error));
-    }
+    if (confirm("Delete user?")) deleteUser(id, dispatch);
   };
   // edit form,selected data for edit
   const handleEdit = (editId) => {
@@ -132,23 +118,7 @@ function Users() {
     }
   };
   // send edited data to redux store fetch new user
-  const editData = (data, status) => {
-    if (status === true) {
-      dispatch(actions.editUser(data));
-    } else {
-      console.log("new user added");
-      // fetch added user
-      fetchData("./server/users/users.php?fetchusers=true").then((res) =>
-        dispatch(actions.addUser(res))
-      );
-    }
-  };
-  // get selected dept
-  const getSelected = (e = 1) => {
-    const id = e.target.value;
-    if (id < 1) return;
-    dispatch(actions.addsection(id));
-  };
+  const editData = (data, status) => editUser(data, status, dispatch);
 
   return (
     <Layout>
@@ -172,6 +142,7 @@ function Users() {
             <AddUser
               depts={departments}
               isEditing={editor}
+              setEdit={setEdit}
               Edit={Edit}
               title="Edit User "
               url="./server/users/users.php?edituser=true"
@@ -196,18 +167,40 @@ function Users() {
           className={`${classes.root} my-1`}
           component="div"
         >
-          {departments.length > 0 ? (
-            <AddDept depts={departments} sendValue={getSelected} />
-          ) : null}
+          <Grid container>
+            <Grid item>
+              {" "}
+              {departments.length > 0 ? (
+                <AddDept
+                  depts={departments}
+                  department={department}
+                  sendValue={getSelected}
+                />
+              ) : null}
+            </Grid>
+            <Grid item>
+              {" "}
+              <SearchUser getSearch={fetchSearch} />
+            </Grid>
+            <Grid item>
+              <Button
+                varinat="outline"
+                color="primary"
+                className="my-2 mr-2 p-1"
+                onClick={fetchAllUsers}
+              >
+                All
+              </Button>
+            </Grid>
+          </Grid>
+
           {section.length > 0 ? (
             <ShowUsers
               users={section}
               deleteKey={handleDelete}
               editKey={handleEdit}
             />
-          ) : (
-            <CircularProgress color="primary" className="max-auto my-auto" />
-          )}
+          ) : null}
         </Grid>
       </Grid>
     </Layout>

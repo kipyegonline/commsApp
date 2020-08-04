@@ -6,11 +6,17 @@ const initState = {
   userdepts: [],
   userStats: [],
   sectionUsers: [],
+  department: "",
 };
 function usersReducer(state = initState, action) {
   switch (action.type) {
     case C.ADD_USERS:
-      return { ...state, users: action.payload, sectionUsers: action.payload };
+      return {
+        ...state,
+        users: action.payload,
+        sectionUsers: action.payload,
+        department: "",
+      };
     case C.DELETE_USER:
       return {
         ...state,
@@ -20,17 +26,31 @@ function usersReducer(state = initState, action) {
         ),
       };
     case C.SECTION_USERS:
+      const checkdept = state.users.find(
+        (user) => user.userdept === action.payload
+      );
       return {
         ...state,
         sectionUsers: state.users.filter(
           (user) => user.userdept === action.payload
         ),
+        department: checkdept ? checkdept.dept : "",
+      };
+    case C.SEARCHED_USERS:
+      return {
+        ...state,
+        sectionUsers: action.payload,
+        department: "",
       };
     case C.EDIT_USER:
       const id = state.users.find((user) => user.id === action.payload.id);
       if (id) {
-        state.users[id] = action.payload;
-        return state;
+        return {
+          ...state,
+          users: state.users.map((user) =>
+            user.id === action.payload.id ? { ...action.payload } : { ...user }
+          ),
+        };
       }
 
       return state;

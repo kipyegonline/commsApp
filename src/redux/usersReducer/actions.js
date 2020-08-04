@@ -5,6 +5,7 @@ export const editUser = (payload) => ({ type: C.EDIT_USER, payload });
 export const deleteUser = (payload) => ({ type: C.DELETE_USER, payload });
 export const editSelected = (payload) => ({ type: C.SELECTED_USER, payload });
 export const addsection = (payload) => ({ type: C.SECTION_USERS, payload });
+export const addsearched = (payload) => ({ type: C.SEARCHED_USERS, payload });
 export const addselectedUsers = (payload) => ({
   type: C.ADD_SELECTED_USERS,
   payload,

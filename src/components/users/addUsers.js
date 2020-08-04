@@ -1,17 +1,22 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Input from "@material-ui/core/Input";
+import Typography from "@material-ui/core/Typography";
+import { useDispatch } from "react-redux";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import Search from "@material-ui/icons/Search";
 import { Close, CloseRounded } from "@material-ui/icons";
 import $ from "jquery";
 import { Grid } from "@material-ui/core";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import PropTypes from "prop-types";
+
 import {
   getLocal,
   handleLocalStorage,
@@ -50,6 +55,7 @@ function AddUser({
   updateData = (f) => f,
   closeEditor = (f) => f,
   isEditing = false,
+  setEdit = (f) => f,
 }) {
   const [username, setUsername] = React.useState("");
   const [usertitle, setUserTitle] = React.useState("");
@@ -82,9 +88,11 @@ function AddUser({
     setUserEmail("");
     setUserpassword("");
     setuserDept("");
+    setError("");
+    setEdit({});
   };
   React.useEffect(() => {
-    if (Edit["id"] !== undefined) {
+    if (Edit.id !== undefined) {
       setEditing(true);
       setUsername(Edit.username);
       setUserPhone(Edit.userphone);
@@ -123,7 +131,7 @@ function AddUser({
       userphone.trim().length > 6 &&
       usertitle.trim().length > 0 &&
       useremail.trim().length > 6 &&
-      Number(userdept) > 0 &&
+      userdept.length > 0 &&
       userpassword.trim().length > 5
     ) {
       // disable button
@@ -191,6 +199,7 @@ function AddUser({
       // also update redux state if we're editing
       editing && updateData(data, true);
       // then send to server via jquery ajax, url sent via props
+
       $.ajax({
         url,
         data,
@@ -199,9 +208,8 @@ function AddUser({
       })
 
         .then((res) => {
-          console.log("user added 1", res);
           // immediately fetch added user from server
-          editing === false && updateData({}, false);
+          editing === false ? updateData({}, false) : null;
 
           if (res.status === 200) {
             setSuccess(res.msg);
@@ -220,6 +228,7 @@ function AddUser({
               if (editing) {
                 setEditing(false);
                 closeEditor(false);
+                setEdit({});
               }
             }, 2000);
           } else {
@@ -358,7 +367,7 @@ AddUser.propTypes = {
       altId: PropTypes.string,
       id: PropTypes.string,
     })
-  ),
+  ).isRequired,
   title: PropTypes.string,
   url: PropTypes.string,
   Edit: PropTypes.shape({
@@ -374,15 +383,18 @@ export const AddDept = ({
   depts = [],
   sendValue = (f) => f,
   userdept = "",
+  department = "",
 }) => {
   const [dept, setdept] = React.useState(userdept);
+  const dispatch = useDispatch();
+
   React.useEffect(() => {
     setdept(userdept);
   }, [userdept]);
 
   const handleChange = (e) => {
     //setdept(e.target.value);
-    sendValue(e);
+    sendValue(e, dispatch);
   };
   return (
     <FormControl variant="filled">
@@ -404,6 +416,57 @@ export const AddDept = ({
           </MenuItem>
         ))}
       </Select>
+      <Typography className="my-1 p-1" variant="subtitle2">
+        {department || ""}
+      </Typography>
     </FormControl>
+  );
+};
+AddDept.propTypes = {
+  depts: PropTypes.arrayOf(
+    PropTypes.shape({
+      department: PropTypes.string,
+      altName: PropTypes.string,
+      altId: PropTypes.string,
+      id: PropTypes.string,
+    })
+  ).isRequired,
+  sendValue: PropTypes.func.isRequired,
+  userdept: PropTypes.string,
+  department: PropTypes.string,
+};
+
+export const SearchUser = ({ getSearch = (f) => f }) => {
+  const [text, setText] = React.useState("");
+  const dispatch = useDispatch();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (text.trim().length > 0) {
+      getSearch(text, dispatch);
+      setText("");
+    }
+  };
+
+  return (
+    <form className="form form-inline p-2 " onSubmit={handleSubmit}>
+      <FormControl className="my-2 ">
+        <InputLabel>Search User</InputLabel>
+        <Input
+          type="search"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          endAdornment={
+            <InputAdornment position="end">
+              <Search
+                size="large"
+                style={{ cursor: "pointer" }}
+                onClick={handleSubmit}
+              />
+            </InputAdornment>
+          }
+        />
+      </FormControl>
+    </form>
   );
 };

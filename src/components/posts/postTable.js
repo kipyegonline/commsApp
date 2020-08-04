@@ -136,6 +136,7 @@ const TableBodyInfo = ({
   clientDept = "",
   addedBy = "",
   status = "",
+  adder = "",
   altId = "",
   addedon = "",
   seen = "0",
@@ -189,7 +190,7 @@ const TableBodyInfo = ({
       </TableCell>
       <TableCell>{addedon}</TableCell>
       <TableCell>
-        <b>{+handler_id === uuid ? "You" : addedBy} </b>
+        <b>{+handler_id === uuid || adder === uuid ? "You" : addedBy} </b>
       </TableCell>
       <TableCell>
         <Button

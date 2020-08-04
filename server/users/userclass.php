@@ -53,14 +53,14 @@ if($stmt){
     }
 //update users
 public function editUsers($username, $userphone, $usertitle, $useremail, $userdept,
- $userpassword, $id){
+ $id){
         $sql="UPDATE `comms_users`
  set username='{$username}',
  userphone='{$userphone}',
   usertitle='{$usertitle}',
  useremail='{$useremail}',
  userdept='{$userdept}',
- userpassword='{$userpassword}',
+
  addedon=NOW()
  WHERE id={$id} LIMIT 1";
 

@@ -45,7 +45,7 @@ if(isset($_GET["edituser"]) && $_GET["edituser"]=="true"){
     $userAltId= $_POST["userAltId"];
     $id=$_POST["id"];
 
-$user->editUsers($username, $userphone, $usertitle, $useremail, $userdept, $userpassword, $id);
+$user->editUsers($username, $userphone, $usertitle, $useremail, $userdept, $id);
    
 
 
