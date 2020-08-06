@@ -78,7 +78,7 @@ $user->searchUser($id);
 
 if(isset($_GET["deleteuser"]) && $_GET["deleteuser"]=="true"){
     $id=$_GET["userId"];
-    if($id){
+    if(isset($id)){
        //delete users
        $user->deleteUser($id);
     }

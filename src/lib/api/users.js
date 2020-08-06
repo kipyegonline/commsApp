@@ -48,7 +48,7 @@ export const editUser = (data, status, dispatch) => {
 };
 // get selected dept
 export const getSelected = (e = 1, dispatch) => {
-  const id = e.target.value;
+  const id = +e.target.value;
 
   if (id < 1) return;
   dispatch(useractions.addsection(id));

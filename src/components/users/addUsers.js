@@ -2,13 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Input from "@material-ui/core/Input";
-import Typography from "@material-ui/core/Typography";
+import { Typography, CircularProgress } from "@material-ui/core";
 import { useDispatch } from "react-redux";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
+import Snackbar from "@material-ui/core/Snackbar";
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from "@material-ui/icons/Close";
+import MuiAlert from "@material-ui/lab/Alert";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Search from "@material-ui/icons/Search";
 import { Close, CloseRounded } from "@material-ui/icons";
@@ -66,6 +70,7 @@ function AddUser({
   const [successmsg, setSuccess] = React.useState("");
   const [errormsg, setError] = React.useState("");
   const [editing, setEditing] = React.useState(false);
+  const [spinner, setSpin] = React.useState(false);
   const form = React.useRef(null);
   const btn = React.useRef(null);
   const classes = useStyles();
@@ -136,6 +141,7 @@ function AddUser({
     ) {
       // disable button
       btn.current.disabled = true;
+      setSpin(true);
 
       // send to server
       /*
@@ -209,11 +215,13 @@ function AddUser({
 
         .then((res) => {
           // immediately fetch added user from server
+          console.log("user added or edited", editing, res);
           editing === false ? updateData({}, false) : null;
 
           if (res.status === 200) {
             setSuccess(res.msg);
             btn.current.disabled = false;
+            setSpin(false);
             form.current.reset();
             setTimeout(() => {
               setSuccess("");
@@ -224,6 +232,7 @@ function AddUser({
               setUserEmail("");
               setUserpassword("");
               setuserDept("");
+
               // editor
               if (editing) {
                 setEditing(false);
@@ -236,6 +245,7 @@ function AddUser({
           }
         })
         .catch((error) => {
+          setSpin(false);
           setError(error.message);
           console.log("err", error);
           btn.current.disabled = false;
@@ -270,7 +280,6 @@ function AddUser({
         />
       ) : null}
       <p className="text-center">{editing ? "Edit User" : "Add User"}</p>
-
       <FormControl justify="center" className={classes.formControl}>
         <InputLabel>Name</InputLabel>
         <Input
@@ -283,7 +292,6 @@ function AddUser({
           value={username}
         />
       </FormControl>
-
       <FormControl className={classes.formControl}>
         <InputLabel>Title</InputLabel>
         <Input
@@ -313,7 +321,6 @@ function AddUser({
         <FormText>{Edit.department || ""}</FormText>
         <AddDept depts={depts} userdept={userdept} sendValue={sendValue} />
       </FormControl>
-
       <FormControl className={classes.formControl}>
         <InputLabel>Email</InputLabel>
         <Input
@@ -342,9 +349,13 @@ function AddUser({
       ) : null}
       <div className="form-group">
         <FormHelperText className="text-danger">{errormsg}</FormHelperText>
-        <FormHelperText className="text-success">{successmsg}</FormHelperText>
       </div>
-
+      {spinner ? (
+        <p className="text-center">
+          <CircularProgress />
+        </p>
+      ) : null}
+      <SimpleSnackbar show={!!successmsg} message={successmsg} />
       <Button
         variant="contained"
         size="medium"
@@ -470,3 +481,59 @@ export const SearchUser = ({ getSearch = (f) => f }) => {
     </form>
   );
 };
+
+export function SimpleSnackbar({ show, message }) {
+  const [open, setOpen] = React.useState(show);
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  return (
+    <Snackbar
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      open={open}
+      autoHideDuration={5000}
+      onClose={handleClose}
+      message={message}
+    >
+      <Alert onClose={handleClose} severity="success">
+        {message}
+      </Alert>
+    </Snackbar>
+  );
+}
+
+function Alert(props) {
+  return (
+    <MuiAlert
+      style={{ width: "100%" }}
+      elevation={6}
+      variant="filled"
+      {...props}
+    />
+  );
+}
+
+/* action={
+        <React.Fragment>
+          <Button color="secondary" size="small" onClick={handleClose}>
+            Close
+          </Button>
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </React.Fragment>
+      }*/

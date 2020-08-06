@@ -3,7 +3,8 @@ import Link from "next/link";
 import Router from "next/router";
 import NProgress from "nprogress";
 import PropTypes from "prop-types";
-import { Fab } from "@material-ui/core";
+import CloseIcon from "@material-ui/icons/Close";
+import { Fab, IconButton } from "@material-ui/core";
 import ADDICON from "@material-ui/icons/Add";
 
 import {
@@ -33,7 +34,19 @@ const NavBar = (props) => {
   return (
     <Navbar color="light" light expand="md">
       <NavbarBrand href="/">DV</NavbarBrand>
-      <NavbarToggler onClick={toggle} />
+      {!isOpen ? (
+        <NavbarToggler onClick={toggle} />
+      ) : (
+        <IconButton
+          style={{ border: "1px solid #ccc" }}
+          size="large"
+          onClick={toggle}
+          variant="outlined"
+        >
+          <CloseIcon />
+        </IconButton>
+      )}
+
       <Collapse isOpen={isOpen} navbar>
         <Nav className={`mr-auto ${styles.navp}`} navbar>
           <NavItem>

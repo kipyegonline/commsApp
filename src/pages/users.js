@@ -9,6 +9,7 @@ import {
   TableCell,
   CircularProgress,
   Button,
+  ButtonGroup,
   Box,
 } from "@material-ui/core";
 import Skeleton from "@material-ui/lab";
@@ -63,6 +64,7 @@ function Users() {
 
   const [Edit, setEdit] = React.useState({});
   const [editor, setEditor] = React.useState(false);
+  const [showForm, setForm] = React.useState(false);
 
   const dispatch = useDispatch();
   const fetchAllDepts = () => {
@@ -78,15 +80,15 @@ function Users() {
   React.useEffect(() => {
     // fetch data
 
-    /*fetchLocalData(dispatch);*/
+    fetchLocalData(dispatch);
 
     // get the departments and users
-
+    /*
     Promise.all([
       fetchAllDepts(),
       fetchAllUsers(),
       fetchStats("../server/users/users.php?fetchuserdeptstats=true", dispatch),
-    ]);
+    ]);*/
   }, []);
 
   // hit the redux store
@@ -115,17 +117,19 @@ function Users() {
     if (selectedUser) {
       setEdit(selectedUser);
       setEditor(true);
+      setForm(true);
     }
   };
   // send edited data to redux store fetch new user
   const editData = (data, status) => editUser(data, status, dispatch);
+  const closeEditor = () => setEditor(false);
 
   return (
     <Layout>
       <Grid
         container
         spacing={1}
-        className={` mx-auto`}
+        className={`mx-auto`}
         alignItems="flex-start"
         direction="row-reverse"
         justify="center"
@@ -138,6 +142,7 @@ function Users() {
           className={`${classes.root} mt-5`}
           component="div"
         >
+          {/* Edit user */}
           {editor ? (
             <AddUser
               depts={departments}
@@ -147,6 +152,7 @@ function Users() {
               title="Edit User "
               url="./server/users/users.php?edituser=true"
               updateData={editData}
+              closeEditor={closeEditor}
             />
           ) : (
             <AddUser
@@ -183,14 +189,26 @@ function Users() {
               <SearchUser getSearch={fetchSearch} />
             </Grid>
             <Grid item>
-              <Button
-                varinat="outline"
-                color="primary"
-                className="my-2 mr-2 p-1"
-                onClick={fetchAllUsers}
-              >
-                All
-              </Button>
+              <ButtonGroup className=" ml-3 mt-4">
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  className=" mr-2"
+                  size="small"
+                  onClick={fetchAllUsers}
+                >
+                  See All
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  className=" ml-2"
+                  onClick={() => setEditor(false)}
+                >
+                  {editor ? "Editing user" : "Add User"}
+                </Button>
+              </ButtonGroup>
             </Grid>
           </Grid>
 

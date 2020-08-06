@@ -102,7 +102,12 @@ if($stmt){
 public function deleteUser($id){
 $sql="DELETE FROM comms_users where id='{$id}' LIMIT 1";
  $stmt=$this->connection->exec($sql);
-echo sendFeedback(200, "$this->name deleted");
+ if($stmt){
+     echo sendFeedback(200, "$id deleted");
+ }else{
+     echo sendFeedback(201, "Couldn't delete $id ");
+ }
+
     }
 
 public function searchUser($keyword){
@@ -162,16 +167,21 @@ private function hashPassword($password){
 }
 private function verifyPassword($password,$email){
     $query="SELECT COUNT(*) from comms_users where useremail='$email'";
-    $tmt=$this->connection->query($query);
+    $stmt=$this->connection->query($query);
     if($stmt){
         $row=$stmt->fetchColumn();
         if($row>0){
-            if(password_verify()){
+            $data=$stmt->fetch(PDO::FETCH_ASSOC);
+            if(password_verify($password,$data["userpassword"])){
                 return true;
             }
             return false;
+        }else{
+             echo json_encode(["status"=>201,"msg"=>"Invalid email/password"]);
+             exit;
         }
+        
     }
-
+return false;
 }
 }
