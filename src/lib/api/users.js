@@ -86,3 +86,7 @@ export const fetchSearch = (text, dispatch) => {
     })
     .catch((error) => console.log(error));
 };
+
+export const useAuth = () =>
+  globalThis.Window && JSON.parse(localStorage.getItem("commsApp"));
+export const removeAuth = () => localStorage.removeItem("commsApp");

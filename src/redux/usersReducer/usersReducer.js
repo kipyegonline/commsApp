@@ -27,12 +27,12 @@ function usersReducer(state = initState, action) {
       };
     case C.SECTION_USERS:
       const checkdept = state.users.find(
-        (user) => user.userdept === action.payload
+        (user) => user.userdept == action.payload
       );
       return {
         ...state,
         sectionUsers: state.users.filter(
-          (user) => user.userdept === action.payload
+          (user) => +user.userdept === action.payload
         ),
         department: checkdept ? checkdept.dept : "",
       };

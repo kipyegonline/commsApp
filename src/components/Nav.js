@@ -17,6 +17,7 @@ import {
   NavLink,
 } from "reactstrap";
 import Button from "@material-ui/core/Button";
+import { removeAuth, useAuth } from "../lib/api/users";
 import styles from "./css/nav.module.css";
 
 Router.onRouteChangeStart = () => {
@@ -30,6 +31,10 @@ const NavBar = (props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => setIsOpen(!isOpen);
+  const handleLogout = () => {
+    removeAuth();
+    Router.push("/login");
+  };
 
   return (
     <Navbar color="light" light expand="md">
@@ -98,6 +103,17 @@ const NavBar = (props) => {
               variant="contained"
             >
               Add Post
+            </Button>
+          </NavItem>
+          <NavItem>
+            <Button
+              color="secondary"
+              size="small"
+              className="ml-5"
+              onClick={handleLogout}
+              variant="outlined"
+            >
+              Log Out
             </Button>
           </NavItem>
         </Nav>

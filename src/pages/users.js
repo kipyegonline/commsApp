@@ -80,15 +80,15 @@ function Users() {
   React.useEffect(() => {
     // fetch data
 
-    fetchLocalData(dispatch);
+    //fetchLocalData(dispatch);
 
     // get the departments and users
-    /*
+
     Promise.all([
       fetchAllDepts(),
       fetchAllUsers(),
       fetchStats("../server/users/users.php?fetchuserdeptstats=true", dispatch),
-    ]);*/
+    ]);
   }, []);
 
   // hit the redux store
@@ -158,6 +158,7 @@ function Users() {
             <AddUser
               depts={departments}
               isEditing={editor}
+              updateData={editData}
               title="Add User"
               url="./server/users/users.php?adduser=true"
             />

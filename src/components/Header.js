@@ -3,19 +3,19 @@ import { Row, Col } from "reactstrap";
 
 export default () => (
   <Row>
-    <header>
-      <h3>Customer Care Manager</h3>
+    <header className="header">
+      <h3 className="text-header">Customer Care Manager</h3>
     </header>
 
     <style jsx>
       {`
-        header {
+        .header {
           display: flex;
           justify-content: center;
           align-items: center;
         }
 
-        h3 {
+        .text-header {
           font-size: 1.5rem;
           font-weight: bold;
           text-shadow: 2px 2px 10px;
