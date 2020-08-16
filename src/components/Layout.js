@@ -3,6 +3,7 @@ import Router from "next/router";
 import Skeleton from "@material-ui/lab/Skeleton";
 import PropTypes from "prop-types";
 import { Container } from "reactstrap";
+import { Grid, Typography } from "@material-ui/core";
 import Head from "next/head";
 import Header from "./Header";
 import NavBar from "./Nav";
@@ -11,9 +12,6 @@ import { useAuth } from "../lib/api/users";
 
 const Layout = ({ children, title }) => {
   const data = useAuth();
-  React.useEffect(() => {
-    if (!data) Router.push("/login");
-  }, []);
 
   const layout = (
     <Container className="white lighten-1" fluid>
@@ -27,14 +25,26 @@ const Layout = ({ children, title }) => {
       </Head>
       <Header />
       <NavBar />
-      {data ? (
-        children
-      ) : (
-        <Skeleton width={400} height={400} variant="rect" animation="wave" />
-      )}
-      <footer className="indigo text-white lighten-2 bg-primary p-2">
-        <p>VINCE PRODUCTION</p>
-      </footer>
+      <section style={{ height: "100vh", marginTop: ".15rem" }}>
+        {children}
+      </section>
+
+      <Grid
+        style={{
+          background: "purple",
+          padding: ".5rem 0",
+          color: "white",
+          position: "absolute",
+          left: 0,
+          bottom: 0,
+          lineHeight: "1em",
+          width: "98%",
+        }}
+      >
+        <Typography align="center" variant="body1">
+          Copyright &copy; {new Date().getFullYear()}
+        </Typography>
+      </Grid>
       <style global jsx>
         {`
           html {
@@ -49,7 +59,7 @@ const Layout = ({ children, title }) => {
             line-height: 1em;
             font-family: helvetica;
             font-size: 1.2rem;
-
+            height: 100%;
             background: #fff;
           }
         `}
@@ -64,7 +74,14 @@ const Layout = ({ children, title }) => {
       </style>
     </Container>
   );
-  return layout;
+  if (globalThis.Window) {
+    if (data) return layout;
+    Router.push("/login");
+  }
+
+  return (
+    <Skeleton width="100%" height="100%" variant="rect" animation="wave" />
+  );
 };
 Layout.propTypes = {
   children: PropTypes.node,

@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Typography,
   Input,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
@@ -85,9 +86,9 @@ export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
 
   return (
     <>
-      <span className="mx-auto text-center alert alert-info my-2">
+      <Typography className="mx-auto text-center alert alert-info my-2">
         {depts.length} departments
-      </span>
+      </Typography>
       <List>
         {depts.slice(start, end).map((dept, i) => (
           <ListItem

@@ -8,7 +8,7 @@ import {
   Button,
   FormHelperText,
 } from "@material-ui/core";
-import { editLocal } from "../../../components/helpers";
+import { editLocal } from "../../helpers";
 
 function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
   const form = React.useRef(null);

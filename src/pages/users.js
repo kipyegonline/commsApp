@@ -129,7 +129,7 @@ function Users() {
       <Grid
         container
         spacing={1}
-        className={`mx-auto`}
+        className={`mx-auto my-1`}
         alignItems="flex-start"
         direction="row-reverse"
         justify="center"

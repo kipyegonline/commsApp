@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Row, Col } from "reactstrap";
 import Input from "@material-ui/core/Input";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
@@ -11,11 +10,11 @@ import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import $ from "jquery";
 import { useDispatch, useSelector } from "react-redux";
-import Layout from "../../components/Layout";
-import ShowDepts from "./departments/showdepts";
-import * as actions from "../../redux/departments/actions";
-import { getLocal, handleLocalStorage } from "../../components/helpers";
-import EditDepartments from "./departments/editpartments";
+import Layout from "../components/Layout";
+import ShowDepts from "../components/admin/departments/showdepts";
+import * as actions from "../redux/departments/actions";
+import { getLocal, handleLocalStorage } from "../components/helpers";
+import EditDepartments from "../components/admin/departments/editpartments";
 
 const useStyles = makeStyles({
   grid: {

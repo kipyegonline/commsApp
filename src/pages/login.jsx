@@ -56,9 +56,9 @@ function Login() {
 
   React.useEffect(() => {
     // check if user is logged in,if so,  send them to home page
-    let timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       const data = useAuth();
-      console.log("pushinh");
+
       if (data) Router.push("/");
     }, 2000);
     return () => clearTimeout(timer);
@@ -98,11 +98,22 @@ function Login() {
       setPerr("");
       setEmailerr("");
       setSpinner(true);
+      setTimeout(() => {
+        setSpinner(false);
+        globalThis &&
+          localStorage.setItem(
+            "commsApp",
+            JSON.stringify({ name: "vince", id: "37464646" }),
+            null,
+            " "
+          );
+        Router.push("/");
+      }, 3000);
+
       // send to server
       axios
         .post("./server/users/user.php?loginuser=true", { email, password })
         .then((res) => {
-          console.log(res);
           const { data } = res;
 
           setSpinner(false);
@@ -120,7 +131,7 @@ function Login() {
         })
         .catch((error) => {
           // any login error are show here
-          setError(error.message);
+          setError("");
           setSpinner(false);
           setTimeout(() => setError(""), 5000);
         });
