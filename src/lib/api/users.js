@@ -74,6 +74,7 @@ export const fetchLocalData = (dispatch) => {
   );
 };
 
+
 export const fetchSearch = (text, dispatch) => {
   axios
     .get(`./server/users/users.php?getdeptsearch=true&keyword=${text}`)
