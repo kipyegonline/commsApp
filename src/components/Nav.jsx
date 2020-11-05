@@ -108,97 +108,97 @@ const NavBar = () => {
           {isOpen ? <Close /> : <MenuIcon />}
         </IconButton>
       </div>
-      <Toolbar>
-        <div className={classes.nav}>
-          <Typography color="secondary" variant="subtitle1">
-            Mailtracker
-          </Typography>
 
-          <Typography
-            variant="body2"
-            className={pathname === "/" ? classes.active : ""}
-          >
-            <Link href="/">
-              <NavLink className={classes.navlink}>
-                <IconButton>
-                  <Home />
-                </IconButton>
-              </NavLink>
-            </Link>
-          </Typography>
+      <div className={classes.nav}>
+        <Typography color="secondary" variant="subtitle1">
+          Mailtracker
+        </Typography>
 
-          <Typography
-            className={pathname === "/posts" ? classes.active : ""}
-            variant="body2"
-          >
-            <Link href="/posts">
-              <NavLink className={classes.navlink}>
-                <IconButton>
-                  <PostsIcons />
-                </IconButton>
-                Posts
-              </NavLink>
-            </Link>
-          </Typography>
-          <Typography
-            variant="body2"
-            className={pathname === "/users" ? classes.active : ""}
-          >
-            <Link href="/users">
-              <NavLink className={classes.navlink}>
-                <IconButton>
-                  <Users />
-                </IconButton>
-                Users
-              </NavLink>
-            </Link>
-          </Typography>
-          <Typography
-            variant="body2"
-            className={pathname === "/add-departments" ? classes.active : ""}
-          >
-            <Link href="/add-departments">
-              <NavLink className={classes.navlink}>
-                <IconButton>
-                  <Departments />
-                </IconButton>
-                Departments
-              </NavLink>
-            </Link>
-          </Typography>
-          <Typography
-            variant="body2"
-            className={pathname === "/issues" ? classes.active : ""}
-          >
-            <Link href="/issues">
-              <NavLink className={classes.navlink}>
-                <IconButton>
-                  <Issues />
-                </IconButton>
-                Issues
-              </NavLink>
-            </Link>
-          </Typography>
-
-          <div>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={() => Router.push("/add-post")}
-            >
-              Add post
-            </Button>
-          </div>
-          <Typography variant="title">
-            <NavLink className={classes.navlink}>
-              <IconButton color="secondary" onClick={handleLogout}>
-                <Exit />
+        <Typography
+          variant="body2"
+          className={pathname === "/" ? classes.active : ""}
+        >
+          <Link href="/">
+            <a>
+              {" "}
+              <IconButton>
+                <Home />
               </IconButton>
-              log out
-            </NavLink>
-          </Typography>
+            </a>
+          </Link>
+        </Typography>
+
+        <Typography
+          className={pathname === "/posts" ? classes.active : ""}
+          variant="body2"
+        >
+          <Link href="/posts">
+            <a>
+              <IconButton>
+                <PostsIcons />
+              </IconButton>
+              Posts
+            </a>
+          </Link>
+        </Typography>
+        <Typography
+          variant="body2"
+          className={pathname === "/users" ? classes.active : ""}
+        >
+          <Link href="/users">
+            <a>
+              {" "}
+              <IconButton>
+                <Users />
+              </IconButton>
+              Users
+            </a>
+          </Link>
+        </Typography>
+        <Typography
+          variant="body2"
+          className={pathname === "/add-departments" ? classes.active : ""}
+        >
+          <Link href="/add-departments">
+            <a>
+              <IconButton>
+                <Departments />
+              </IconButton>
+              Departments
+            </a>
+          </Link>
+        </Typography>
+        <Typography
+          variant="body2"
+          className={pathname === "/issues" ? classes.active : ""}
+        >
+          <Link href="/issues">
+            <a>
+              <IconButton>
+                <Issues />
+              </IconButton>
+              Issues
+            </a>
+          </Link>
+        </Typography>
+
+        <div>
+          <Button
+            color="secondary"
+            variant="contained"
+            size="small"
+            onClick={() => Router.push("/add-post")}
+          >
+            post Issue
+          </Button>
         </div>
-      </Toolbar>
+        <Typography variant="subtitle1">
+          <IconButton color="secondary" size="small" onClick={handleLogout}>
+            <Exit />
+            log out
+          </IconButton>
+        </Typography>
+      </div>
     </AppBar>
   );
 };

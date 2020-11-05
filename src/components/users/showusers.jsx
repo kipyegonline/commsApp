@@ -106,7 +106,7 @@ const TableUsers = ({
         </TableHead>
         <TableBody>
           {users.map((user, i) => (
-            <TableList
+            <PureTableList
               key={user.id}
               {...user}
               deleteKey={deleteKey}
@@ -150,4 +150,8 @@ const TableList = ({
       </IconButton>
     </TableCell>
   </TableRow>
+);
+const PureTableList = React.memo(
+  TableList,
+  (PrevProps, nextProps) => PrevProps.id === nextProps.id
 );

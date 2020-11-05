@@ -68,12 +68,12 @@ function Users() {
 
   const dispatch = useDispatch();
   const fetchAllDepts = () => {
-    fetchData(
-      "../server/departments/departments.php?fetchdepts=true"
-    ).then((res) => dispatch(depts.addDepts(res)));
+    fetchData("/departments/fetchdepts").then((res) =>
+      dispatch(depts.addDepts(res))
+    );
   };
   const fetchAllUsers = () => {
-    fetchData("./server/users/users.php?fetchusers=true").then((res) =>
+    fetchData("/users/fetchusers").then((res) =>
       dispatch(actions.addUser(res))
     );
   };
@@ -87,7 +87,7 @@ function Users() {
     Promise.all([
       fetchAllDepts(),
       fetchAllUsers(),
-      fetchStats("../server/users/users.php?fetchuserdeptstats=true", dispatch),
+      fetchStats("/users/fetchuserdeptstats", dispatch),
     ]);
   }, []);
 

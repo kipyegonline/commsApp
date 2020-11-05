@@ -20,8 +20,6 @@ import {
   TextField,
   InputLabel,
   FormControl,
-  Chip,
-  Avatar,
   Card,
   CardActions,
   Typography,
@@ -91,7 +89,7 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
           </TableHead>
           <TableBody>
             {posts.slice(start, end).map((post, i) => (
-              <TableBodyInfo
+              <PureTableInfo
                 key={post.id}
                 {...post}
                 setTicks={setTicks}
@@ -112,6 +110,7 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
 
       <Pagination
         color="primary"
+        rounded
         count={pages}
         defaultPage={current + 1}
         size="large"
@@ -157,7 +156,7 @@ const TableBodyInfo = ({
   // routing to next page and registering blue tucks
   const handlePostClick = (id, altId, subject, issue) => {
     // set blue ticks
-    if (uuid === +handler_id && seen === "0") {
+    if (uuid === +handler_id && seen === 0) {
       setTicks(id);
     }
     const subjectAs = subject.split(" ").join("-");
@@ -205,17 +204,23 @@ const TableBodyInfo = ({
     </TableRow>
   );
 };
+const PureTableInfo = React.memo(
+  TableBodyInfo,
+  (prevProps, nextProps) => prevProps.id === nextProps.id
+);
 export default PostsTable;
 
+/*The darn toolbar*/
 export const ToolBar = ({
-  sendGroup,
-  issues,
-  setIssue,
-  issue,
-  users,
-  user,
-  getUser,
-  handleSearch,
+  sendGroup = (f) => f,
+  issues = [],
+  setIssue = (f) => f,
+  issue = string,
+  users = [],
+  user = {},
+  getUser = (f) => f,
+  handleSearch = (f) => f,
+  getDate = (f) => f,
 }) => {
   return (
     <Grid
@@ -256,17 +261,12 @@ export const ToolBar = ({
       </Grid>
 
       <Grid item>
-        <p>View by nature of issues</p>
+        <p>View by issues</p>
         <DisplayIssues issues={issues} getIssue={setIssue} issue={issue} />
       </Grid>
       <Grid item>
         <p> View By days</p>
-        <Chip
-          avatar={<Avatar>10</Avatar>}
-          color="primary"
-          size="medium"
-          label="pending"
-        />
+        <TextField type="date" onChange={(e) => getDate(e.target.value)} />
       </Grid>
       <Grid item>
         <p> view by Colleagues </p>

@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import Router from "next/router";
 import Head from "next/head";
-import { makeStyles } from "@material-ui/styles";
+// import { useSession, signin, signout } from "next-auth/client";
 import {
   Grid,
   Card,
@@ -16,6 +16,7 @@ import {
   Snackbar,
   LinearProgress,
   Divider,
+  makeStyles,
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import { useAuth } from "../lib/api/users";
@@ -53,6 +54,7 @@ function Login() {
   const [perr, setPerr] = React.useState("");
   const [errmsg, setError] = React.useState("");
   const classes = useStyles();
+  //const [session, loading] = useSession();
 
   React.useEffect(() => {
     // check if user is logged in,if so,  send them to home page
@@ -65,6 +67,7 @@ function Login() {
   }, []);
   const handleChange = (e) => {
     // get input and set state
+    /* eslint-disable prefer-template */
     const setState = eval("set" + e.target.name);
     setState(e.target.value);
   };
@@ -78,7 +81,7 @@ function Login() {
       if (e.target.value.length > 5) setPerr("");
     }
   };
-
+  /* eslint-disable no-unused-expressions */
   const handleSubmit = (e) => {
     e.preventDefault();
     // validate the damn data
@@ -98,24 +101,15 @@ function Login() {
       setPerr("");
       setEmailerr("");
       setSpinner(true);
-      setTimeout(() => {
-        setSpinner(false);
-        globalThis &&
-          localStorage.setItem(
-            "commsApp",
-            JSON.stringify({ name: "vince", id: "37464646" }),
-            null,
-            " "
-          );
-        Router.push("/");
-      }, 3000);
+
+      /* eslint-disable no-undef */
 
       // send to server
       axios
-        .post("./server/users/user.php?loginuser=true", { email, password })
+        .post("./handlelogin", { email, password })
         .then((res) => {
           const { data } = res;
-
+          console.log(res);
           setSpinner(false);
           if (data.status === 200) {
             setPassword("");
@@ -124,12 +118,14 @@ function Login() {
             // global this is an addition to ES2020
             globalThis &&
               localStorage.setItem("commsApp", JSON.stringify(data));
-            Router.push("/");
+            // Router.push("/");
           } else {
             throw new Error(data.statusText);
           }
         })
         .catch((error) => {
+          localStorage.setItem("commsApp", JSON.stringify({ uuid: 20 }));
+          Router.push("/");
           // any login error are show here
           setError("");
           setSpinner(false);
@@ -151,7 +147,6 @@ function Login() {
           key="title"
         />
       </Head>
-
       <Card className={classes.card} elevation={10}>
         <Typography variant="h5" align="center">
           Customer care manager Portal
@@ -202,6 +197,7 @@ function Login() {
           </Snackbar>
         </form>
       </Card>
+      {/* eslint-disable react/jsx-one-expression-per-line */}
       <style jsx>{`
         .login {
           max-width: 500px;
@@ -220,3 +216,56 @@ function Login() {
   );
 }
 export default Login;
+
+//mysql://username:password@127.0.0.1:3306/database_name?synchronize=true
+
+/**import React from 'react'
+import { 
+  useSession, 
+  signin, 
+  signout 
+} from 'next-auth/client'
+
+export default function myComponent() {
+  const [ session, loading ] = useSession()
+
+  return <p>
+    {!session && <>
+      Not signed in <br/>
+      <button onClick={signin}>Sign in</button>
+    </>}
+    {session && <>
+      Signed in as {session.user.email} <br/>
+      <button onClick={signout}>Sign out</button>
+    </>}
+  </p>
+}
+
+import NextAuth from 'next-auth'
+import Providers from 'next-auth/providers'
+
+const options = {
+  providers: [
+    // OAuth authentication providers
+    Providers.Apple({
+      clientId: process.env.APPLE_ID,
+      clientSecret: process.env.APPLE_SECRET
+    }),
+    Providers.Google({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET
+    }),
+    // Sign in with passwordless email link
+    Providers.Email({
+      server: process.env.MAIL_SERVER,
+      from: '<no-reply@example.com>'
+    }),
+  ],
+  // SQL or MongoDB database (or leave empty)
+  database: process.env.DATABASE_URL
+}
+
+export default (req, res) => NextAuth(req, res, options)
+
+
+*/

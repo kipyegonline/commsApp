@@ -4,6 +4,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
+import Pagination from "@material-ui/lab/Pagination";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
@@ -23,22 +24,22 @@ const useStyles = makeStyles({
   },
 });
 function AddDepartments() {
-  const [currentPage, setCurrentPage] = React.useState(0);
   const [editData, setEditData] = React.useState({});
   const [isEditing, setEditing] = React.useState(false);
+  const [current, setCurrent] = React.useState(0);
   const classes = useStyles();
   const { departments } = useSelector((state) => ({
     departments: state.departments.departments,
   }));
+  const perpage = departments.length < 10 ? departments.length : 10;
+  const pages = Math.ceil(departments.length / perpage);
   const dispatch = useDispatch();
   // get departments from server
   const fetchDepts = async () => {
     try {
-      const res = await fetch(
-        "../server/departments/departments.php?fetchdepts=true"
-      );
+      const res = await fetch("/departments/fetchdepts");
       if (res.ok) {
-        let data = await res.json();
+        const data = await res.json();
         //  using redux soon
 
         dispatch(actions.addDepts(data));
@@ -49,7 +50,7 @@ function AddDepartments() {
     /** // remove this during production
     dispatch(actions.addDepts(getLocal("depts"))) */
   };
-
+  const handlePagination = (e, p) => setCurrent(p + 1);
   // use effect
   React.useEffect(() => {
     fetchDepts();
@@ -70,20 +71,23 @@ function AddDepartments() {
         <Grid item className={`card ${classes.grid}`} xs>
           <p className="text-center alert alert-primary my-2">
             {" "}
-            {departments.length} Departments
+            {departments.length || ""} Departments
           </p>
           <ShowDepts
             depts={departments}
             sendValue={setEditData}
-            currentPage={currentPage}
-            perpage={10}
+            currentPage={current}
+            perpage={perpage}
             setEditing={setEditing}
           />
           {departments.length > 10 ? (
             <Pagination
-              dataset={departments}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              count={pages}
+              color="primary"
+              rounded
+              page={current + 1}
+              defaultPage={1}
+              onChange={handlePagination}
             />
           ) : null}
         </Grid>
@@ -245,49 +249,3 @@ const setStyle = (bg) => ({
   height: 40,
   borderRadius: "50%",
 });
-const pagine = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-const Pagination = ({ dataset, setCurrentPage }) => {
-  const [pages, setPages] = React.useState([]);
-  // pagination
-  const perpage = 10;
-  const generatePages = (data, pernums) => {
-    let pages = Math.ceil(data.length / pernums);
-    pages = [...Array(pages)].map((p, i) =>
-      i === 0 ? { clicked: true, num: i } : { clicked: false, num: i }
-    );
-    return pages;
-  };
-  React.useEffect(() => {
-    const gpages = generatePages(dataset, perpage);
-
-    setPages(gpages);
-  }, []);
-  const getPage = (page) => {
-    setCurrentPage(page);
-
-    setPages(
-      pages.map((p) =>
-        p.num === page ? { ...p, clicked: true } : { ...p, clicked: false }
-      )
-    );
-  };
-
-  return (
-    <div style={pagine}>
-      {pages.map((page) => (
-        <span
-          className="text-center"
-          style={setStyle(page.clicked)}
-          key={page.num}
-          onClick={() => getPage(page.num)}
-        >
-          {page.num + 1}
-        </span>
-      ))}
-    </div>
-  );
-};

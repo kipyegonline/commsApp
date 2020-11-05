@@ -1,21 +1,29 @@
-import Head from "next/head";
 import React from "react";
-import { Provider } from "react-redux";
-import Link from "next/link";
+import { useDispatch } from "react-redux";
+import axios from "axios";
 import { Grid, Container, Divider } from "@material-ui/core";
+import * as postactions from "../redux/posts/actions";
 import Layout from "../components/Layout";
-import store from "../redux/store";
 
 const Home = () => {
+  const dispatch = useDispatch();
   const getInitialProps = () => {
-    fetch("www.flickr.com/api")
+    fetch(`/posts/20`)
       .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("initial err", err));
+  };
+  const fetchLaravel = (id) => {
+    axios
+      .get(`/posts/${id}`)
+      .then((res) => {
+        dispatch(postactions.addPosts(res.data));
+      })
+      .catch((error) => console.error("fetch posts:", error));
   };
   React.useEffect(() => {
-    getInitialProps();
+    fetchLaravel(20);
   }, []);
+
   return (
     <Layout title="Home">
       <Grid container justify="space-evenly" alignItems="flex-start">
@@ -32,6 +40,17 @@ const Home = () => {
 };
 
 export default Home;
+/*
+export const getStaticProps = async () => {
+  try {
+    const res = await fetch(`/posts/20`);
+
+    const posts = await res.json();
+    return { props: { posts } };
+  } catch (error) {
+    return {};
+  }
+};*/
 
 // cv
 

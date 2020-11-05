@@ -35,7 +35,7 @@ const useclass = makeStyles({
     background: "#fff",
   },
 });
-//mock auth
+// mock auth
 const { uuid, userdept } = { uuid: 20, userdept: 5 };
 function Issues() {
   const dispatch = useDispatch();
@@ -49,19 +49,19 @@ function Issues() {
   // fetch issues from server
   const fetchIssues = () => {
     axios
-      .get("./server/issues/issues.php?fetchissues=true")
+      .get("/issues/fetchall")
       .then((res) => dispatch(handleIssues.AddIssues(res.data)))
       .catch((error) => console.log(error, "fetch error"));
   };
   // add user issue
   const getValues = (issue) => {
     dispatch(handleIssues.addIssue(issue));
-    //remove on prod
-    handleLocalStorage(issue, "issues");
+    // remove on prod
+    // handleLocalStorage(issue, "issues");
   };
   // delete issue
   const deleteValue = (id) => {
-    axios.get(`./server/issues/issues.php?deleteIssue=true&id=${id}`);
+    axios.get(`/issues?delete=${id}`);
     dispatch(handleIssues.deleteIssues(id));
   };
   React.useEffect(() => {
@@ -69,7 +69,7 @@ function Issues() {
     dispatch(handleDepts.issueSelected(userdept));
     dispatch(handleIssues.getDeptIssues(userdept));
 
-    //remove prod
+    // remove prod
     // dispatch(handleIssues.AddIssues(getLocal("issues")));
   }, []);
 
@@ -145,7 +145,7 @@ const AddIssues = ({
 
       // sendSelected("");
       $.ajax({
-        url: "./server/issues/issues.php?addissue=true",
+        url: "/issues?add=true",
         data: { issue, altId: v4(), userdept: userdept.id },
         type: "POST",
         dataType: "json",
@@ -155,18 +155,19 @@ const AddIssues = ({
           if (res.status === 200) {
             setSuccess(res.msg);
             setIssue("");
-            setTimeout(() => {
-              form.current.reset();
-              setSuccess("");
-              btn.current.disabled = false;
-            }, 2000);
           } else {
             throw new Error(res.msg);
           }
         })
         .catch((error) => {
-          btn.current.disabled = false;
           setError(error.message);
+        })
+        .finally(() => {
+          setTimeout(() => {
+            form.current.reset();
+            setSuccess("");
+            btn.current.disabled = false;
+          }, 3000);
         });
     }
   };
@@ -220,9 +221,9 @@ const IssueList = ({ issues = [], deleteId = (f) => f }) => {
     /* eslint-disable no-alert */
     if (confirm("Delete items?")) {
       deleteId(id);
-      fetch(`./server/issues/issues.php?deleteissue=true&id=${id}`)
+      fetch(`/issues?delete=${id}`)
         .then((res) => res.json())
-        .then((res) => res)
+        .then((res) => console.log(res))
         .catch((error) => error);
     }
   };

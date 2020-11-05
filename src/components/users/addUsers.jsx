@@ -21,11 +21,7 @@ import { Grid } from "@material-ui/core";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
-import {
-  getLocal,
-  handleLocalStorage,
-  editLocal,
-} from "../../components/helpers";
+import { getLocal, handleLocalStorage, editLocal } from "../helpers";
 import { FormText } from "reactstrap";
 
 const useStyles = makeStyles(

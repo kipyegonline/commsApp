@@ -34,7 +34,7 @@ const Layout = ({ children, title }) => {
           background: "purple",
           padding: ".5rem 0",
           color: "white",
-          position: "absolute",
+          position: "fixed",
           left: 0,
           bottom: 0,
           lineHeight: "1em",
