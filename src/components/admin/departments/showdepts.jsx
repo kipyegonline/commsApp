@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -23,7 +24,8 @@ const ShowDepts = ({
     if (confirm("Are you sure about it?")) {
       console.log(id);
       dispatch(actions.deleteDept(id));
-      fetch(`../../server/departments/departments.php?deletedept=true&id=${id}`)
+      axios
+        .get(`/departments/deletedept/${id}`)
         .then((res) => res.json())
         .then((res) => {
           console.log(res);

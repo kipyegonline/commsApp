@@ -161,7 +161,7 @@ const TableBodyInfo = ({
     }
     const subjectAs = subject.split(" ").join("-");
     // Route to another page
-    Router.push(`/post?issue=${altId}`, undefined, {
+    Router.push(`/post/${altId}`, undefined, {
       shallow: false,
     });
   };
@@ -210,7 +210,7 @@ const PureTableInfo = React.memo(
 );
 export default PostsTable;
 
-/*The darn toolbar*/
+/* The darn toolbar */
 export const ToolBar = ({
   sendGroup = (f) => f,
   issues = [],
@@ -222,6 +222,7 @@ export const ToolBar = ({
   handleSearch = (f) => f,
   getDate = (f) => f,
 }) => {
+  const testu = [{ altId: "775hfrhdy6e", id: 1, username: "jules" }];
   return (
     <Grid
       container

@@ -20,7 +20,7 @@ function Posts() {
   const [user, setUser] = React.useState("");
   const [current, setCurrent] = React.useState(0);
   const dispatch = useDispatch();
-
+  let fetchTimer;
   // mock auth
   const { uuid, userdept } = { uuid: 20, userdept: 5 };
   // pull data from redux store
@@ -50,22 +50,31 @@ function Posts() {
   };
   // for other event-based network requests
   const fetchData = (url: string, callback: <T>(data: T) => void) => {
+    setLoading(true);
+    clearTimeout(fetchTimer);
     axios
       .get(url)
       .then((res) => {
-        if (!Array.isArray(res.data)) throw new Error("No data found");
+        if (!res?.data.length || !Array.isArray(res.data))
+          throw new Error("No data found");
         const { data } = res;
         dispatch(callback(data));
       })
-      .catch((error) => setError("Error: " + error.message))
-      .finally(() => {
-        setTimeout(() => {
+      .catch((error) => {
+        setError("Error: " + error.message);
+
+        fetchTimer = setTimeout(() => {
+          errormsg.length && fetchPosts(uuid);
           setError("");
           // get everything if no search results were found
-          !posts.length && fetchPosts(uuid);
+          console.log("callbaak", errormsg.length);
         }, 5000);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
+
   // fetch dept users affiliated with logged in user
   const fetchDeptUsers = (dept: string | number) => {
     axios
@@ -78,6 +87,7 @@ function Posts() {
       .catch((error) => console.error("fetch posts:", error))
       .finally(() => console.log("finally"));
   };
+
   // fetch issues belonging to currently logged in user
   const fetchdeptIssues = (dept: number) => {
     axios
@@ -98,10 +108,10 @@ function Posts() {
         fetchDeptUsers(userdept),
         fetchdeptIssues(userdept),
       ]);
-    console.log("running effect");
+
     /* 
-     remove on prod
-    dispatch(postactions.addPosts(getLocal("posts")));*/
+    //remove on prod
+    dispatch(postactions.addPosts(JSON.parse(localStorage.getItem("posts"))));*/
   }, []);
 
   /* Events */
@@ -118,6 +128,7 @@ function Posts() {
   // when an issue is selected
   const handleSelectedIssues = (id: string) => {
     setIssue(id);
+
     const url = `/posts/fetchdeptIssues/${id}/${uuid}`;
     fetchData(url, postactions.addPosts);
   };
@@ -135,6 +146,7 @@ function Posts() {
 
   const handleSelectedUsers = (id: string) => {
     setUser(id);
+
     const url = `/posts/fetchdeptusers/${id}/${uuid}`;
     fetchData(url, postactions.addPosts);
   };
@@ -167,16 +179,9 @@ function Posts() {
 
         {posts.length ? (
           <>
-            <Pagination
-              count={5}
-              page={current - 1}
-              color="primary"
-              defaultPage={1}
-              onChange={handleChange}
-            />
             <PostsTable posts={posts} setTicks={handleBlueTicks} />
           </>
-        ) : loading && !errormsg ? (
+        ) : loading ? (
           <div className="text-center mx-auto my-4 p-4">
             <CircularProgress size="3rem" />
           </div>

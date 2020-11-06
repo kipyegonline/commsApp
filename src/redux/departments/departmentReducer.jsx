@@ -48,6 +48,8 @@ function departmentReducer(state = initState, action) {
           selected: false,
         })),
       };
+    case C.SET_ERR:
+      return { ...state, errorMsg: action.payload };
     default:
       return state;
   }

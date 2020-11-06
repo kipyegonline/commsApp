@@ -41,7 +41,7 @@ function DisplayIssues({
       } else {
       }
     } else {
-      if (e.target.value.length > 0) {
+      if (e.target.value) {
         getIssue(e.target.value);
         setErrorInt(false);
       }
@@ -158,7 +158,7 @@ export function DisplayUsers({
 
   const classes = useStyles();
   const handleChange = (e) => {
-    if (e.target.value.length > 0) {
+    if (e.target.value) {
       getUser(e.target.value);
 
       setErrorInt(false);

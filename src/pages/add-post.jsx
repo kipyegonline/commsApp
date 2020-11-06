@@ -14,7 +14,10 @@ import {
   Divider,
   FormHelperText,
   Card,
+  CircularProgress,
+  Typography,
 } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 import AddCircle from "@material-ui/icons/AddCircle";
 import { AddCircleOutlineRounded, DataUsageOutlined } from "@material-ui/icons";
@@ -24,6 +27,7 @@ import DisplayIssues, { ShowDepts, ShowUsers } from "../components/posts/post";
 import * as useractions from "../redux/usersReducer/actions";
 import * as userdepts from "../redux/departments/actions";
 import * as issueactions from "../redux/Issues/actions";
+import FetchDepts from "../lib/api/depts";
 import { getLocal, handleLocalStorage } from "../components/helpers";
 
 const useStyles = makeStyles({
@@ -68,11 +72,12 @@ function AddPost() {
 
   // hit redux store
 
-  const { issues, selectedUsers: users, departments } = useSelector(
+  const { issues, selectedUsers: users, departments, depterr } = useSelector(
     (state) => ({
       issues: state.issues.fetched,
       selectedUsers: state.users.selectedUsers,
       departments: state.departments.departments,
+      depterr: state.departments.errorMsg,
     })
   );
   const dispatch = useDispatch();
@@ -81,17 +86,15 @@ function AddPost() {
   const today = new Date();
   React.useEffect(() => {
     console.log("Effect, client Dept");
-    window.addEventListener(
-      "unload",
-      () => {
-        console.log("Dom unloading");
-      },
-      [clientDept]
-    );
-    window.addEventListener("load", () => {
-      console.log("Dom loaded");
-    });
+    if (departments.length || issues.length) return;
+    FetchDepts("/departments/fetchdepts", dispatch);
+
+    return () => {
+      console.log("unmounting");
+      userdepts.resetSelected();
+    };
   }, []);
+
   // fetch users from clicked department
   const fetchSelectedUsers = (id) => {
     fetch(`./server/users/users.php?fetchSelectedUsers=true&id=${id}`)
@@ -264,7 +267,7 @@ function AddPost() {
       };
       console.log("dara", holder, data);
       //Remove on prod
-      handleLocalStorage(data, "posts");
+      //handleLocalStorage(data, "posts");
       $.ajax({
         url: "./server/posts/posts.php?addposts=true",
         dataType: "json",
@@ -418,12 +421,28 @@ function AddPost() {
               </Button>
             </Grid>
             <Grid item xs className={classes.grid}>
-              <ShowDepts depts={departments} getDept={handleDept} />
+              {/* eslint-disable no-nested-ternary */}
+              {departments.length ? (
+                <div>
+                  <ShowDepts depts={departments} getDept={handleDept} />
 
-              <Card>
-                <small>Selected departments</small>
-                <SelectedDepts depts={departments} />
-              </Card>
+                  <Card>
+                    <small>Selected departments</small>
+                    <SelectedDepts depts={departments} />
+                  </Card>
+                </div>
+              ) : !depterr ? (
+                <div className="mx-auto my-4 p-4 text-center">
+                  <CircularProgress color="primary" size="3rem" />
+                  <Typography>Loading departments</Typography>
+                </div>
+              ) : (
+                <div className="mx-auto my-4 p-4 text-center">
+                  <Alert severity="warning">
+                    <p>{depterr}</p>
+                  </Alert>
+                </div>
+              )}
             </Grid>
             <Grid item xs className={classes.grid}>
               {users.length > 0 ? (

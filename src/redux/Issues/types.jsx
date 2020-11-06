@@ -1,4 +1,4 @@
-export const C = {
+const C = {
   ADD_ISSUES: "ADD_ISSUES",
   DELETE_ISSUES: "DELETE_ISSUES",
   ADD_ISSUE: "ADD_ISSUE",
@@ -11,3 +11,4 @@ export const C = {
   ISSUE_DEPT: "ISSUE_DEPT",
   FETCH_ALL: "FETCH_ALL",
 };
+export { C };

@@ -28,7 +28,7 @@ function issuesReducer(state = initState, action) {
       return {
         ...state,
         issues: state.issues.filter((issue) => issue.altId !== action.payload),
-        addedIssues: state.issues.filter(
+        addedIssues: state.addedIssues.filter(
           (issue) => issue.altId !== action.payload
         ),
       };
@@ -59,6 +59,7 @@ function issuesReducer(state = initState, action) {
           item.id === action.payload ? { ...item, selected: false } : item
         ),
       };
+
     case C.ADD_FETCHED:
       return {
         ...state,

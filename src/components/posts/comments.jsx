@@ -19,7 +19,7 @@ import {
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import { v4 } from "uuid";
-import $ from "jquery";
+
 import * as postactions from "../../redux/posts/actions";
 
 // mock auth
@@ -37,21 +37,17 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
   const form = React.useRef(null);
   const getEdited = (data) => {
     dispatch(postactions.addEdited(data));
-    $.ajax({
-      type: "POST",
-      url: "./server/posts/posts.php?editComment=true",
-      data,
-      dataType: "json",
-    })
+    axios
+      .post("/comments/editComment", {
+        ...data,
+      })
       .then((res) => res)
       .catch((error) => console.error(error));
   };
   const handleDelete = (id) => {
     if (confirm("Delete comment?")) {
       dispatch(postactions.deleteComment(id));
-      axios.get(
-        `./server/posts/posts.php?deleteComment=true&id=${id}&uuid=${uuid}`
-      );
+      axios.get(`/comments/deleteComment/${id}/${uuid}`);
     }
   };
   const handleSubmit = (e) => {
@@ -75,12 +71,8 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
       sendValue(comment);
       // send to server
 
-      $.ajax({
-        url: "./server/posts/posts.php?addcomment=true",
-        data: comment,
-        type: "POST",
-        dataType: "json",
-      })
+      axios
+        .post("/comments/addcomment", { ...comment })
         .then((res) => {
           if (res.status === 200) {
             setText("");
@@ -94,7 +86,7 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
           btn.current.disabled = false;
           console.error("add err", error);
         });
-      //remove on prod
+      // remove on prod
       setText("");
       form.current.reset();
     }
@@ -143,7 +135,11 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
   );
 }
 
-const CommentsList = ({ list, getEdited, deleteKey }) => {
+const CommentsList = ({
+  list = [],
+  getEdited = (f) => f,
+  deleteKey = (f) => f,
+}) => {
   const [editing, setEditing] = React.useState({
     clicked: false,
     id: undefined,
@@ -175,7 +171,7 @@ const CommentsList = ({ list, getEdited, deleteKey }) => {
             setEditing={setEditing}
           />
           {/* Restriction */}
-          {+item.adder === uuid || item.uuid===uuid ? (
+          {+item.adder === uuid || item.uuid === uuid ? (
             <>
               <FormHelperText>
                 <IconButton onClick={() => deleteKey(item.altId)}>
@@ -198,13 +194,19 @@ const CommentsList = ({ list, getEdited, deleteKey }) => {
     </Box>
   );
 };
-const CommentsCounter = ({ comments }) => (
+const CommentsCounter = ({ comments = 0 }) => (
   <Typography variant="subtitle1">
     {comments} {comments > 1 ? "comments" : "comment"}
   </Typography>
 );
 
-const EditInput = ({ id, display, comment, sendEdited, setEditing }) => {
+const EditInput = ({
+  id,
+  display,
+  comment = "",
+  sendEdited = (f) => f,
+  setEditing = (f) => f,
+}) => {
   const [edit, setEdit] = React.useState(comment);
   const handleChange = (e) => {
     setEdit(e.target.value);

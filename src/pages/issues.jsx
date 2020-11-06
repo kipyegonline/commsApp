@@ -1,5 +1,5 @@
 import React from "react";
-import $ from "jquery";
+
 import axios from "axios";
 import { v4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,8 +16,11 @@ import {
   List,
   ListItem,
   ListItemText,
+  Typography,
   Box,
+  CircularProgress,
 } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import { Twitter, Facebook, Delete } from "@material-ui/icons";
 import Pagination from "@material-ui/lab/Pagination";
 import Layout from "../components/Layout";
@@ -25,6 +28,7 @@ import { ShowDepts } from "../components/posts/post";
 import { AddDept } from "../components/users/addUsers";
 import * as handleIssues from "../redux/Issues/actions";
 import * as handleDepts from "../redux/departments/actions";
+import FetchDepts from "../lib/api/depts";
 import { getLocal, handleLocalStorage } from "../components/helpers";
 
 const useclass = makeStyles({
@@ -41,36 +45,42 @@ function Issues() {
   const dispatch = useDispatch();
   const classes = useclass();
   const [dept, setDept] = React.useState({});
+  const [loading, setloading] = React.useState(true);
   // redux
-  const { issues: listIssues, departments } = useSelector((state) => ({
+  const { issues: listIssues, departments, depterr } = useSelector((state) => ({
     issues: state.issues.addedIssues,
     departments: state.departments.departments,
+    depterr: state.departments.errorMsg,
   }));
   // fetch issues from server
   const fetchIssues = () => {
     axios
       .get("/issues/fetchall")
-      .then((res) => dispatch(handleIssues.AddIssues(res.data)))
-      .catch((error) => console.log(error, "fetch error"));
+      .then((res) => {
+        dispatch(handleIssues.AddIssues(res.data));
+        dispatch(handleDepts.issueSelected(userdept));
+        dispatch(handleIssues.getDeptIssues(userdept));
+      })
+      .catch((error) => console.log(error, "fetch error"))
+      .finally(() => setloading(false));
   };
-  // add user issue
+  // add user issue to redux store
   const getValues = (issue) => {
     dispatch(handleIssues.addIssue(issue));
     // remove on prod
     // handleLocalStorage(issue, "issues");
   };
-  // delete issue
+  // delete issue from redux
   const deleteValue = (id) => {
-    axios.get(`/issues?delete=${id}`);
+    // axios.get(`/issues?delete=${id}`);
     dispatch(handleIssues.deleteIssues(id));
   };
   React.useEffect(() => {
     fetchIssues();
-    dispatch(handleDepts.issueSelected(userdept));
-    dispatch(handleIssues.getDeptIssues(userdept));
-
+    FetchDepts("/departments/fetchdepts", dispatch);
     // remove prod
     // dispatch(handleIssues.AddIssues(getLocal("issues")));
+    return () => handleDepts.resetSelected();
   }, []);
 
   const handleDept = (e) => {
@@ -93,15 +103,48 @@ function Issues() {
           <AddIssues sendValue={getValues} userdept={dept} />
         </Grid>
         <Grid item xs>
-          <ShowDepts depts={departments} getDept={handleDept} />
+          {/* eslint-disable no-nested-ternary */}
+          {departments.length ? (
+            <ShowDepts depts={departments} getDept={handleDept} />
+          ) : depterr ? (
+            <div className="mx-auto my-4 text-center p-4">
+              <Alert severity="error">
+                <Typography align="center">{depterr}</Typography>
+              </Alert>
+            </div>
+          ) : (
+            <div className="mx-auto my-4 p-4 text-center">
+              <CircularProgress color="primary" size="3rem" />
+              <Typography>Loading departments</Typography>
+            </div>
+          )}
         </Grid>
 
         <Grid item xs>
-          <Box>
-            <small className="alert alert-primary text-center p-2 my-2">
-              {dept.department || ""}
-            </small>
-            <IssueList issues={listIssues} deleteId={deleteValue} />
+          <Box className="block my-2">
+            {/* eslint-disable no-nested-ternary */}
+            {listIssues.length ? (
+              <div>
+                <Typography
+                  variant="body2"
+                  className="alert alert-primary text-center p-2 my-2"
+                >
+                  {dept.department || ""}
+                </Typography>
+                <IssueList issues={listIssues} deleteId={deleteValue} />
+              </div>
+            ) : loading ? (
+              <div className="mx-auto my-4 text-center">
+                <CircularProgress size="3rem" color="primary" />
+              </div>
+            ) : (
+              <div className="mx-auto my-4 p-4 text-center">
+                <Alert severity="error">
+                  {" "}
+                  <p>No issues found</p>
+                </Alert>{" "}
+              </div>
+            )}
             {departments.length ? (
               <Button
                 variant="outlined"
@@ -144,13 +187,10 @@ const AddIssues = ({
       /* remove id during prod */
 
       // sendSelected("");
-      $.ajax({
-        url: "/issues?add=true",
-        data: { issue, altId: v4(), userdept: userdept.id },
-        type: "POST",
-        dataType: "json",
-      })
+      axios
+        .post("/issues/add/true", { issue, altId: v4(), userdept: userdept.id })
         .then((res) => {
+          console.log(res);
           sendSelected("");
           if (res.status === 200) {
             setSuccess(res.msg);
@@ -221,8 +261,9 @@ const IssueList = ({ issues = [], deleteId = (f) => f }) => {
     /* eslint-disable no-alert */
     if (confirm("Delete items?")) {
       deleteId(id);
-      fetch(`/issues?delete=${id}`)
-        .then((res) => res.json())
+      axios
+        .get(`/issues/delete/${id}`)
+        .then((res) => console.log(res))
         .then((res) => console.log(res))
         .catch((error) => error);
     }

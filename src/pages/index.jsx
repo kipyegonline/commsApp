@@ -4,14 +4,11 @@ import axios from "axios";
 import { Grid, Container, Divider } from "@material-ui/core";
 import * as postactions from "../redux/posts/actions";
 import Layout from "../components/Layout";
+import FetchDepts from "../lib/api/depts";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const getInitialProps = () => {
-    fetch(`/posts/20`)
-      .then((res) => res.json())
-      .catch((err) => console.log("initial err", err));
-  };
+
   const fetchLaravel = (id) => {
     axios
       .get(`/posts/${id}`)
@@ -22,6 +19,7 @@ const Home = () => {
   };
   React.useEffect(() => {
     fetchLaravel(20);
+    FetchDepts("/departments/fetchdepts", dispatch);
   }, []);
 
   return (

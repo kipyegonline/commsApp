@@ -8,7 +8,7 @@ import {
 } from "@material-ui/core";
 import { Star, Cancel } from "@material-ui/icons";
 import { v4 } from "uuid";
-import { useColors } from "../context/colors";
+import { useColors } from "../../context/colors";
 
 const UseStar = ({ selected = false, handleclick = (f) => f }) => (
   <Star htmlColor={selected ? "red" : "gray"} onClick={handleclick} />

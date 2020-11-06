@@ -4,19 +4,21 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-import Pagination from "@material-ui/lab/Pagination";
+import { Pagination, Alert } from "@material-ui/lab";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import $ from "jquery";
 import { useDispatch, useSelector } from "react-redux";
+import FetchDepts from "../lib/api/depts";
 import Layout from "../components/Layout";
 import ShowDepts from "../components/admin/departments/showdepts";
 import * as actions from "../redux/departments/actions";
 import { getLocal, handleLocalStorage } from "../components/helpers";
 import EditDepartments from "../components/admin/departments/editpartments";
 
+import { CircularProgress } from "@material-ui/core";
 const useStyles = makeStyles({
   grid: {
     minWidth: 360,
@@ -24,36 +26,25 @@ const useStyles = makeStyles({
   },
 });
 function AddDepartments() {
+  // set up state;
   const [editData, setEditData] = React.useState({});
   const [isEditing, setEditing] = React.useState(false);
+
   const [current, setCurrent] = React.useState(0);
   const classes = useStyles();
-  const { departments } = useSelector((state) => ({
+  const { departments, errormsg } = useSelector((state) => ({
     departments: state.departments.departments,
+    errormsg: state.departments.errorMsg,
   }));
+  // for paginatiom
   const perpage = departments.length < 10 ? departments.length : 10;
   const pages = Math.ceil(departments.length / perpage);
   const dispatch = useDispatch();
-  // get departments from server
-  const fetchDepts = async () => {
-    try {
-      const res = await fetch("/departments/fetchdepts");
-      if (res.ok) {
-        const data = await res.json();
-        //  using redux soon
 
-        dispatch(actions.addDepts(data));
-      }
-    } catch (error) {
-      console.log("fetch error");
-    }
-    /** // remove this during production
-    dispatch(actions.addDepts(getLocal("depts"))) */
-  };
-  const handlePagination = (e, p) => setCurrent(p + 1);
+  const handlePagination = (e, p) => setCurrent(p - 1);
   // use effect
   React.useEffect(() => {
-    fetchDepts();
+    FetchDepts("/departments/fetchdepts", dispatch);
   }, []);
 
   return (
@@ -66,27 +57,41 @@ function AddDepartments() {
         container
       >
         <Grid item className={`card ${classes.grid} `} xs>
-          <AddUsers fetchDepts={fetchDepts} />
+          <AddUsers fetchDepts={FetchDepts} />
         </Grid>
         <Grid item className={`card ${classes.grid}`} xs>
           <p className="text-center alert alert-primary my-2">
             {" "}
             {departments.length || ""} Departments
           </p>
-          <ShowDepts
-            depts={departments}
-            sendValue={setEditData}
-            currentPage={current}
-            perpage={perpage}
-            setEditing={setEditing}
-          />
+          {/* eslint-disable no-nested-ternary */}
+          {departments.length ? (
+            <ShowDepts
+              depts={departments}
+              sendValue={setEditData}
+              currentPage={current}
+              perpage={perpage}
+              setEditing={setEditing}
+            />
+          ) : !errormsg ? (
+            <div className="mx-auto my-4 text-center p-4">
+              <CircularProgress color="primary" size="3rem" />
+            </div>
+          ) : (
+            <div className="p-4">
+              <Alert severity="error">
+                {" "}
+                <p>{errormsg}</p>
+              </Alert>
+            </div>
+          )}
           {departments.length > 10 ? (
             <Pagination
               count={pages}
               color="primary"
               rounded
               page={current + 1}
-              defaultPage={1}
+              defaultValue={1}
               onChange={handlePagination}
             />
           ) : null}
@@ -106,7 +111,7 @@ function AddDepartments() {
 }
 export default AddDepartments;
 
-export const AddUsers = ({ fetchDepts }) => {
+export const AddUsers = ({ FetchDepts }) => {
   const [errormsg, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [dept, setDept] = useState("");

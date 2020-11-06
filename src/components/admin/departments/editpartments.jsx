@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import $ from "jquery";
+import axios from "axios";
 import {
   FormControl,
   InputLabel,
@@ -33,12 +33,8 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
     editLocal(data, editedData, "depts");
      */
 
-    $.ajax({
-      url: "../../server/departments/departments.php?editdept=true",
-      dataType: "json",
-      data: editedData,
-      type: "POST",
-    })
+    axios
+      .post("/departments/editdept/true", { ...editedData })
       .then((res) => {
         if (res.status === 200) {
           fetchDepts();
@@ -48,7 +44,6 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
             setDept("");
             setDeptNick("");
             setSuccess("");
-            data = {};
           }, 4000);
         } else {
           throw new Error(res.msg);

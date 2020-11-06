@@ -21,10 +21,10 @@ import {
   Button,
 } from "@material-ui/core";
 import Skeleton from "@material-ui/lab/Skeleton";
-import * as postactions from "../redux/posts/actions";
-import * as issueactions from "../redux/Issues/actions";
-import Comments from "../components/posts/comments";
-import Layout from "../components/Layout";
+import * as postactions from "../../redux/posts/actions";
+import * as issueactions from "../../redux/Issues/actions";
+import Comments from "../../components/posts/comments";
+import Layout from "../../components/Layout";
 
 const useStyles = makeStyles({
   grid: {
@@ -35,6 +35,7 @@ const useStyles = makeStyles({
   mainGrid: {
     width: "58%",
     background: "beige",
+    marginTop: 10,
   },
 });
 // mock auth
@@ -43,12 +44,16 @@ const { uuid, userdept } = { uuid: 20, userdept: 5 };
 const Post = () => {
   const [reloading, setReloading] = React.useState(false);
   const [related, setRelated] = React.useState([]);
+  const [relatedspin, setRelatedSpin] = React.useState(false);
+  const [recentspin, setRecentpin] = React.useState(false);
+
   const classes = useStyles();
   const dispatch = useDispatch();
   // get the clicked item from router props
   const {
-    query: { issue, title },
+    query: { id: issue },
   } = useRouter();
+
   // get the post from redux store
   const { post, comments, issues, recent } = useSelector((state) => ({
     post: state.posts.post,
@@ -59,21 +64,22 @@ const Post = () => {
   // Re-fetch posts in case of  page reload
   const fetchPost = (userId, postId) => {
     axios
-      .get(
-        `./server/posts/posts.php?fetchposts=true&uuid=${userId}& postId=${postId}`
-      )
-      .then((res) => dispatch(postactions.addPost(res.data)))
-      .then(() => setReloading(false))
-      .catch((error) => console.error("fetch posts:", error));
+      .get(`/posts/fetchpost/${postId}/${userId}`)
+      .then((res) => {
+        if (!res.data.length || !Array.isArray(res.data)) {
+          throw new Error("No payload attached");
+        }
+        dispatch(postactions.addPost(res.data[0]));
+      })
+      .catch((error) => console.error("fetch post:", error))
+      .finally(() => setReloading(false));
   };
   // fetch post comments
   const fetchComments = (userId, postId) => {
     axios
-      .get(
-        `./server/posts/posts.php?fetchcomments=true&uuid=${userId}& postId=${postId}`
-      )
+      .get(`/posts/fetchcomments/${postId}/${userId}`)
       .then((res) => {
-        if (!res.data) {
+        if (!res.data.length || !Array.isArray(res.data)) {
           throw new Error("No payload attached");
         }
 
@@ -84,10 +90,10 @@ const Post = () => {
   // fetch issues
 
   const fetchRelatedIssues = (uuid) => {
+    setRelatedSpin(true);
     axios
-      .get(`./server/posts/posts.php?fetchRelatedIssues=true&&uuid=${uuid}`)
+      .get(`/posts/fetchRelatedIssues/${uuid}/${issue}`)
       .then((res) => {
-        console.log("issues", res);
         if (res.data) {
           if (res.data.length)
             return res.data.map((item) => ({ ...item, selected: false }));
@@ -95,16 +101,16 @@ const Post = () => {
         throw new Error("No payload attached");
       })
       .then((res) => setRelated(res))
-      .catch((error) => console.error("fetch issues:", error));
+      .catch((error) => console.error("fetch issues:", error))
+      .finally(() => setRelatedSpin(false));
   };
 
   // fetch 5 recent posts minus the one under review
 
   const fetchRecentPosts = (userId, issue, recent) => {
+    setRecentpin(true);
     axios
-      .get(
-        `./server/posts/posts.php?fetchrecentpost=true&uuid=${userId}&current=${issue}&recent=${recent}`
-      )
+      .get(`/posts/fetchrecentposts/${issue}/${userId}/`)
       .then((res) => {
         if (res.data) {
           if (res.data.length)
@@ -115,27 +121,32 @@ const Post = () => {
       })
       .then((res) => dispatch(postactions.addrecentposts(res)))
 
-      .catch((error) => console.error("fetch recent posts:", error));
+      .catch((error) => console.error("fetch recent posts:", error))
+      .finally(() => setRecentpin(false));
   };
   // handle page reload
   const handleReload = () => {
     setReloading(true);
+
     const postAltid = JSON.parse(localStorage.getItem("postAltid"));
-    Promise.all([fetchPost(uuid, postAltid), fetchComments(postAltid)]);
+    Promise.all([
+      fetchPost(uuid, postAltid),
+      fetchComments(postAltid),
+    ]).finally(() => setReloading(false));
 
     // pole pole
     setTimeout(() => {
       fetchRelatedIssues(uuid);
       fetchRecentPosts(uuid, issue, true);
-    }, 2000);
+    }, 3000);
   };
-  //when a recent post is clicked
+  // when a recent post is clicked
   const getRecent = (clickedpost) => {
     dispatch(postactions.recentClicked(clickedpost));
     fetchComments(uuid, clickedpost.altId);
   };
   const getRelated = (issue) => {
-    let issues = related.map((item) =>
+    const issues = related.map((item) =>
       item.issue === issue
         ? { ...item, selected: true }
         : { ...item, slected: false }
@@ -143,17 +154,17 @@ const Post = () => {
     setRelated(issues);
     fetchRecentPosts(uuid, issue, false);
   };
+
   const handleResolve = (status) => {
     axios
-      .get(
-        `./server/posts/posts.php?resolveissue=true&uuid=${uuid}&issue=${issue}&status=${status}`
-      )
+      .get(`/posts/resolveissue/${issue}/${uuid}?status=${status}`)
       .then((res) => {
         if (status === 2) fetchRecentPosts(uuid, issue, true);
       })
       .catch((error) => console.log(error));
     dispatch(postactions.resolveIssue({ status, altId: issue }));
   };
+
   React.useEffect(() => {
     // if the post id is already on router params
     if (issue) {
@@ -161,15 +172,16 @@ const Post = () => {
       dispatch(postactions.getPost(issue));
       // fetch posts comments,if any
       fetchComments(uuid, issue);
-      // store local storage for purposes of page reload and all that
+      // store key on  local storage for purposes of page reload and all that
       localStorage.setItem("postAltid", JSON.stringify(issue));
       // fetch issues and recent posts pole pole
       setTimeout(() => {
         fetchRelatedIssues(uuid);
         fetchRecentPosts(uuid, issue, true);
-      }, 2000);
+      }, 3000);
     } else {
-      Router.push("/posts");
+      // setReloading(true);
+      // Router.push("/posts");
     }
 
     // listen to load event, reload that is
@@ -185,35 +197,52 @@ const Post = () => {
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
           <Grid item xs={false} md={3}>
-            <Typography variant="h6">Recent issues</Typography>
-            <RelatedIssues relatedissues={issues} sendRelated={getRelated} />
+            {/* eslint-disable no-nested-ternary */}
+            {issues.length ? (
+              <div>
+                <Typography variant="h6">Recent issues</Typography>
+                <RelatedIssues
+                  relatedissues={issues}
+                  sendRelated={getRelated}
+                />
+              </div>
+            ) : relatedspin ? (
+              <div className="text-center mx-auto m-y-3">
+                <CircularProgress size="1rem" color="primary" />
+              </div>
+            ) : null}
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
             {" "}
             {post && "issue" in post ? (
-              <>
+              <div>
                 <PostDetails {...post} handleResolve={handleResolve} />
+
                 <Comments
                   comments={comments}
                   sendValue={getValue}
                   post_id={post.id}
                   handler_id={post.handler_id}
                 />
-              </>
+              </div>
             ) : (
-              <Box>
-                <CircularProgress color="primary" />
-                <p>Reloading</p>
+              <Box className="m-4 text-center">
+                <CircularProgress color="primary" size="3rem" />
+                <p>Reloading post</p>
               </Box>
             )}
           </Grid>
           <Grid item xs={false} md={3}>
-            <Typography variant="h6">Recent posts</Typography>
             {recent.length ? (
-              <RecentPosts recent={recent} sendRecent={getRecent} />
-            ) : (
-              <p>Loading recent posts</p>
-            )}
+              <div>
+                <Typography variant="h6">Recent posts</Typography>
+                <RecentPosts recent={recent} sendRecent={getRecent} />{" "}
+              </div>
+            ) : recentspin ? (
+              <div className="text-center mx-auto m-y-3">
+                <CircularProgress size="1rem" color="primary" />
+              </div>
+            ) : null}
           </Grid>
         </Grid>
       ) : (
@@ -242,7 +271,7 @@ const PostDetails = ({
   message,
   addedBy,
   handler_id,
-adder,
+  adder,
   status,
   addedon,
   handleResolve,
@@ -297,7 +326,7 @@ adder,
   </Box>
 );
 
-const RecentPosts = ({ recent, sendRecent }) => {
+const RecentPosts = ({ recent=[], sendRecent-f=>f }) => {
   return (
     <List align="left">
       {recent.map((post) => (
@@ -322,16 +351,16 @@ const RecentPosts = ({ recent, sendRecent }) => {
   );
 };
 
-const RelatedIssues = ({ relatedissues, sendRelated }) => {
+const RelatedIssues = ({ relatedissues = [], sendRelated = (f) => f }) => {
   return (
     <List align="left">
       {relatedissues.map((item, i) => (
         <ListItem
-          key={i}
+          key={item.id}
           button
           divider
           selected
-          className={item.selected ? "bg-danger text-white" : "bg-light"}
+          className={item.selected ? "bg-red-500 text-white" : "bg-white"}
           align="right"
           onClick={() => sendRelated(item.issue)}
         >
