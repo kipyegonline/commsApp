@@ -47,7 +47,7 @@ export default function Comments({ comments, sendValue, post_id, handler_id }) {
   const handleDelete = (id) => {
     if (confirm("Delete comment?")) {
       dispatch(postactions.deleteComment(id));
-      axios.get(`/comments/deleteComment/${id}/${uuid}`);
+      axios.post(`/comments/deleteComment`, { id, uuid });
     }
   };
   const handleSubmit = (e) => {

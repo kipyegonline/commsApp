@@ -36,7 +36,7 @@ function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
         editKey={editKey}
         start={start}
       />
-      {users.length > 0 ? (
+      {users.length > 10 ? (
         <Box>
           <Pagination
             color="primary"

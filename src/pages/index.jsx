@@ -19,7 +19,7 @@ const Home = () => {
   };
   React.useEffect(() => {
     fetchLaravel(20);
-    FetchDepts("/departments/fetchdepts", dispatch);
+    FetchDepts("/departments/fetchdepts/true", dispatch);
   }, []);
 
   return (

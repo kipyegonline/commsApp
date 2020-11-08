@@ -10,6 +10,6 @@ export const resetSelected = (payload) => ({
   payload,
 });
 export const issueSelected = (payload) => ({ type: C.ISSUE_SELECTED, payload });
-
+export const setDept = (payload) => ({ type: C.SET_DEPT, payload });
 export const setErr = (payload) => ({ type: C.SET_ERR, payload });
 export const clearSelection = () => ({ type: C.CLEAR_ALL });

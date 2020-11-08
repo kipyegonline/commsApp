@@ -44,22 +44,29 @@ const { uuid, userdept } = { uuid: 20, userdept: 5 };
 function Issues() {
   const dispatch = useDispatch();
   const classes = useclass();
-  const [dept, setDept] = React.useState({});
+
   const [loading, setloading] = React.useState(true);
   // redux
-  const { issues: listIssues, departments, depterr } = useSelector((state) => ({
-    issues: state.issues.addedIssues,
-    departments: state.departments.departments,
-    depterr: state.departments.errorMsg,
-  }));
+  const { issues: listIssues, departments, depterr, dept } = useSelector(
+    (state) => ({
+      issues: state?.issues.addedIssues,
+      departments: state?.departments.departments,
+      depterr: state?.departments.errorMsg,
+      dept: state?.departments.dept,
+    })
+  );
   // fetch issues from server
   const fetchIssues = () => {
     axios
-      .get("/issues/fetchall")
+      .get("/issues/fetchall/true")
       .then((res) => {
+        // dispatch issues to store
         dispatch(handleIssues.AddIssues(res.data));
+        // issues relate to department
         dispatch(handleDepts.issueSelected(userdept));
+
         dispatch(handleIssues.getDeptIssues(userdept));
+        dispatch(handleDepts.setDept(userdept));
       })
       .catch((error) => console.log(error, "fetch error"))
       .finally(() => setloading(false));
@@ -77,19 +84,25 @@ function Issues() {
   };
   React.useEffect(() => {
     fetchIssues();
-    FetchDepts("/departments/fetchdepts", dispatch);
+    if (!departments.length) {
+      FetchDepts("/departments/fetchdepts/true", dispatch);
+    }
     // remove prod
-    // dispatch(handleIssues.AddIssues(getLocal("issues")));
-    return () => handleDepts.resetSelected();
+    //dispatch(handleIssues.AddIssues(getLocal("issues")));
+    return () => dispatch(handleDepts.resetSelected());
   }, []);
 
   const handleDept = (e) => {
-    setDept(e);
+    // set current department
+    handleDepts.issueSelected(e);
 
     dispatch(handleDepts.issueSelected(e.id));
     dispatch(handleIssues.getDeptIssues(e.id));
   };
-
+  const fetchAllfromStore = () => {
+    dispatch(handleIssues.fetAll());
+    dispatch(handleDepts.resetSelected());
+  };
   return (
     <Layout>
       <Grid
@@ -141,7 +154,7 @@ function Issues() {
               <div className="mx-auto my-4 p-4 text-center">
                 <Alert severity="error">
                   {" "}
-                  <p>No issues found</p>
+                  <p>No issues found for this {dept.department}.</p>
                 </Alert>{" "}
               </div>
             )}
@@ -149,7 +162,7 @@ function Issues() {
               <Button
                 variant="outlined"
                 color="secondary"
-                onClick={() => dispatch(handleIssues.fetAll())}
+                onClick={fetchAllfromStore}
               >
                 View all issues
               </Button>
@@ -171,17 +184,25 @@ const AddIssues = ({
   const classes = useclass();
   const form = React.useRef(null);
   const btn = React.useRef(null);
-
+  userdept = {
+    id: 9,
+    department: "Corporate Comms",
+    altName: "PR.",
+    alt_id: "fa79c125-7105-4915-b716-c1df86af5eca",
+    selected: false,
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!userdept.id) {
       setError("Please click on the department");
       setTimeout(() => setError(""), 3000);
     } else if (issue.trimRight().length < 5) {
       setError("Please type the issue");
       setTimeout(() => setError(""), 3000);
-    } else if (issue.trimRight().length > 4 && userdept.id.length > 0) {
+    } else if (issue.trimRight().length > 4 && userdept?.id) {
       btn.current.disabled = true;
+
       sendValue({ issue, altId: v4(), userdept: userdept.id });
 
       /* remove id during prod */

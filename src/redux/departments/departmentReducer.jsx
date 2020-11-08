@@ -2,6 +2,7 @@ import { C } from "./types";
 
 const initState = {
   departments: [],
+  dept: {},
   error: false,
   errorMsg: "",
 };
@@ -33,6 +34,7 @@ function departmentReducer(state = initState, action) {
     case C.ISSUE_SELECTED:
       return {
         ...state,
+        dept: state.departments.find((dept) => dept.id === action.payload),
         departments: state.departments.map((dept) =>
           dept.id === action.payload
             ? { ...dept, selected: true }
@@ -48,6 +50,12 @@ function departmentReducer(state = initState, action) {
           selected: false,
         })),
       };
+    case C.SET_DEPT:
+      return {
+        ...state,
+        dept: state.departments.find((dept) => dept.id === action.payload),
+      };
+
     case C.SET_ERR:
       return { ...state, errorMsg: action.payload };
     default:

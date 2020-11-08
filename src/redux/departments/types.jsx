@@ -12,4 +12,5 @@ export const C = {
   CLEAR_ALL: "CLEAR_ALL",
   SET_SPINNER: "SET_SPINNER",
   SET_ERR: "SET_ERR",
+  SET_DEPT: "SET_DEPT",
 };

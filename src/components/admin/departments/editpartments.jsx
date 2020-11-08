@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 import {
   FormControl,
   InputLabel,
@@ -10,12 +11,18 @@ import {
 } from "@material-ui/core";
 import { editLocal } from "../../helpers";
 
-function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
+function EditDepartments({
+  data = {},
+  fetchDepts = (f) => f,
+  setEditing = (f) => f,
+}) {
   const form = React.useRef(null);
   const [success, setSuccess] = React.useState("");
   const [errormsg, setError] = React.useState("");
   const [department, setDept] = React.useState("");
   const [nickname, setDeptNick] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const dispatch = useDispatch();
   React.useEffect(() => {
     setDept(data.department);
     setDeptNick(data.altName);
@@ -32,19 +39,20 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
      * //remove on prod
     editLocal(data, editedData, "depts");
      */
-
+    if (!nickname || !department) return;
+    setLoading(true);
     axios
       .post("/departments/editdept/true", { ...editedData })
       .then((res) => {
         if (res.status === 200) {
-          fetchDepts();
-          // setEditing(false);
+          fetchDepts("/departments/fetchdepts/true", dispatch);
+          setEditing(false);
           setSuccess(res.msg);
           setTimeout(() => {
             setDept("");
             setDeptNick("");
             setSuccess("");
-          }, 4000);
+          }, 2000);
         } else {
           throw new Error(res.msg);
         }
@@ -54,7 +62,8 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
           ? setError("Error updating.Try again later")
           : setError(error.message);
         setTimeout(() => setError(""), 3000);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   return data !== undefined ? (
@@ -108,8 +117,9 @@ function EditDepartments({ data = {}, fetchDepts = (f) => f }) {
           type="submit"
           color="primary"
           aria-label="move all right"
+          disabled={loading}
         >
-          Edit Department
+          {loading ? "updating" : "Update changes"}
         </Button>
       </form>
     </div>

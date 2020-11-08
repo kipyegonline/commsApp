@@ -86,12 +86,13 @@ function AddPost() {
   const today = new Date();
   React.useEffect(() => {
     console.log("Effect, client Dept");
-    if (departments.length || issues.length) return;
-    FetchDepts("/departments/fetchdepts", dispatch);
+    if (!departments.length || !issues.length) {
+      FetchDepts("/departments/fetchdepts/true", dispatch);
+    }
 
     return () => {
       console.log("unmounting");
-      userdepts.resetSelected();
+      dispatch(userdepts.resetSelected());
     };
   }, []);
 

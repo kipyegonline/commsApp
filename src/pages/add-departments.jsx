@@ -9,7 +9,7 @@ import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { createStyles, Theme, makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import $ from "jquery";
+import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import FetchDepts from "../lib/api/depts";
 import Layout from "../components/Layout";
@@ -18,7 +18,7 @@ import * as actions from "../redux/departments/actions";
 import { getLocal, handleLocalStorage } from "../components/helpers";
 import EditDepartments from "../components/admin/departments/editpartments";
 
-import { CircularProgress } from "@material-ui/core";
+import { CircularProgress, Typography } from "@material-ui/core";
 const useStyles = makeStyles({
   grid: {
     minWidth: 360,
@@ -44,15 +44,16 @@ function AddDepartments() {
   const handlePagination = (e, p) => setCurrent(p - 1);
   // use effect
   React.useEffect(() => {
-    FetchDepts("/departments/fetchdepts", dispatch);
+    if (departments.length) return;
+    FetchDepts("/departments/fetchdepts/true", dispatch);
   }, []);
 
   return (
     <Layout>
       <Grid
-        className="jumbotron"
         spacing={3}
         justify="center"
+        className="py-4 px-2 my-2"
         alignItems="flex-start"
         container
       >
@@ -76,6 +77,7 @@ function AddDepartments() {
           ) : !errormsg ? (
             <div className="mx-auto my-4 text-center p-4">
               <CircularProgress color="primary" size="3rem" />
+              <Typography>Loading departments</Typography>
             </div>
           ) : (
             <div className="p-4">
@@ -96,12 +98,12 @@ function AddDepartments() {
             />
           ) : null}
         </Grid>
-        <Grid item className={`card ${classes.grid} my-2`} xs>
+        <Grid item className={`card ${classes.grid} `} xs>
           {isEditing ? (
             <EditDepartments
               data={editData}
               setEditing={setEditData}
-              fetchDepts={fetchDepts}
+              fetchDepts={FetchDepts}
             />
           ) : null}
         </Grid>
@@ -111,12 +113,14 @@ function AddDepartments() {
 }
 export default AddDepartments;
 
-export const AddUsers = ({ FetchDepts }) => {
+export const AddUsers = ({ fetchDepts }) => {
   const [errormsg, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [dept, setDept] = useState("");
   const [deptNick, setDeptNick] = useState("");
+  const [loading, setLoading] = React.useState(false);
   const form = React.useRef();
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -130,22 +134,20 @@ export const AddUsers = ({ FetchDepts }) => {
         altId: v4(),
       },"depts"); */
       // send to the server via ajax
-      $.ajax({
-        url: "../server/departments/departments.php?adddept=true",
-        type: "POST",
-        dataType: "json",
-        data: {
+      setLoading(true);
+      axios
+        .post("/departments/adddept/true", {
           department: dept,
           altName: deptNick,
           altId: v4(),
-        },
-      })
+        })
         .then((res) => {
           console.log(res, "feed");
           if (res.status === 200) {
             setSuccess(res.msg);
             // refetch from server
-            fetchDepts();
+
+            fetchDepts("/departments/fetchdepts/true", dispatch);
 
             setTimeout(() => {
               // clean up the form and state
@@ -165,7 +167,8 @@ export const AddUsers = ({ FetchDepts }) => {
             : setError("Encountered a connection error.Try again");
           console.log(error.message);
           setTimeout(() => setError(""), 3000);
-        });
+        })
+        .finally(() => setLoading(false));
     } else {
       setError("Add a department");
       setTimeout(() => setError(""), 3000);
@@ -220,9 +223,10 @@ export const AddUsers = ({ FetchDepts }) => {
         size="medium"
         type="submit"
         color="primary"
+        disabled={loading}
         aria-label="move all right"
       >
-        Add Department
+        {loading ? "Adding department" : "Add Department"}
       </Button>
     </form>
   );

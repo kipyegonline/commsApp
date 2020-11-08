@@ -16,7 +16,7 @@ import MuiAlert from "@material-ui/lab/Alert";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Search from "@material-ui/icons/Search";
 import { Close, CloseRounded } from "@material-ui/icons";
-import $ from "jquery";
+import axios from "axios"
 import { Grid } from "@material-ui/core";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
@@ -202,11 +202,10 @@ function AddUser({
       editing && updateData(data, true);
       // then send to server via jquery ajax, url sent via props
 
-      $.ajax({
-        url,
-        data,
-        type: "POST",
-        dataType: "json",
+     axios.post(url,{
+      
+        ...data
+        
       })
 
         .then((res) => {

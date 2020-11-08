@@ -6,7 +6,7 @@ async function FetchDepts(url, dispatch) {
     const res = await axios.get(url);
 
     if (res?.data?.length || Array.isArray(res.data)) {
-      dispatch(actions.addDepts);
+      dispatch(actions.addDepts(res.data));
     } else {
       throw new Error("No data found...");
     }

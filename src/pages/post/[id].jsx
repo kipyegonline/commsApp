@@ -44,8 +44,8 @@ const { uuid, userdept } = { uuid: 20, userdept: 5 };
 const Post = () => {
   const [reloading, setReloading] = React.useState(false);
   const [related, setRelated] = React.useState([]);
-  const [relatedspin, setRelatedSpin] = React.useState(false);
-  const [recentspin, setRecentpin] = React.useState(false);
+  const [relatedspin, setRelatedSpin] = React.useState(true);
+  const [recentspin, setRecentpin] = React.useState(true);
 
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -90,7 +90,7 @@ const Post = () => {
   // fetch issues
 
   const fetchRelatedIssues = (uuid) => {
-    setRelatedSpin(true);
+  
     axios
       .get(`/posts/fetchRelatedIssues/${uuid}/${issue}`)
       .then((res) => {
@@ -108,9 +108,29 @@ const Post = () => {
   // fetch 5 recent posts minus the one under review
 
   const fetchRecentPosts = (userId, issue, recent) => {
-    setRecentpin(true);
+   
     axios
       .get(`/posts/fetchrecentposts/${issue}/${userId}/`)
+      .then((res) => {
+        if (res.data) {
+          if (res.data.length)
+            return res.data.map((item) => ({ ...item, selected: false }));
+        }
+
+        throw new Error("No payload attached");
+      })
+      .then((res) => dispatch(postactions.addrecentposts(res)))
+
+      .catch((error) => console.error("fetch recent posts:", error))
+      .finally(() => setRecentpin(false));
+  };
+
+  // when recents stats is clicked
+
+  const fetchPostsForRecent = (uuid, issue) => {
+    setRecentpin(true);
+    axios
+      .get(`/posts/fetchpostsrecents/${issue}/${uuid}/`)
       .then((res) => {
         if (res.data) {
           if (res.data.length)
@@ -145,24 +165,27 @@ const Post = () => {
     dispatch(postactions.recentClicked(clickedpost));
     fetchComments(uuid, clickedpost.altId);
   };
-  const getRelated = (issue) => {
+  const getRelated = (issue, id) => {
     const issues = related.map((item) =>
       item.issue === issue
         ? { ...item, selected: true }
         : { ...item, slected: false }
     );
     setRelated(issues);
-    fetchRecentPosts(uuid, issue, false);
+    fetchPostsForRecent(uuid, id);
   };
 
-  const handleResolve = (status) => {
+  const handleResolve = (current, newstatus) => {
+    if (current === newstatus) return;
+       dispatch(postactions.resolveIssue({ status, altId: issue }));
     axios
-      .get(`/posts/resolveissue/${issue}/${uuid}?status=${status}`)
+      .get(`/posts/resolveissue/${issue}/${uuid}?status=${newstatus}`)
       .then((res) => {
-        if (status === 2) fetchRecentPosts(uuid, issue, true);
+        console.log(res, "resol");
+        if (res.status === 2) fetchRecentPosts(uuid, issue, false);
+     
       })
       .catch((error) => console.log(error));
-    dispatch(postactions.resolveIssue({ status, altId: issue }));
   };
 
   React.useEffect(() => {
@@ -174,11 +197,16 @@ const Post = () => {
       fetchComments(uuid, issue);
       // store key on  local storage for purposes of page reload and all that
       localStorage.setItem("postAltid", JSON.stringify(issue));
-      // fetch issues and recent posts pole pole
-      setTimeout(() => {
-        fetchRelatedIssues(uuid);
-        fetchRecentPosts(uuid, issue, true);
-      }, 3000);
+
+      // fetch issues and recent posts pole pole if they dont already exist
+      if (!recent.length || !related.length) {
+        setTimeout(() => {
+          Promise.all([
+            fetchRelatedIssues(uuid),
+            fetchRecentPosts(uuid, issue, true),
+          ]);
+        }, 3000);
+      }
     } else {
       // setReloading(true);
       // Router.push("/posts");
@@ -191,14 +219,19 @@ const Post = () => {
   const getValue = (data) => {
     dispatch(postactions.addComment(data));
   };
-
+  console.log(related,relatedSpin,recentspin "related stats");
   return (
     <Layout title={post.clientName || "Post"}>
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
           <Grid item xs={false} md={3}>
             {/* eslint-disable no-nested-ternary */}
-            {issues.length ? (
+            {relatedspin ? (
+              <div className="text-center mx-auto my-3 p-4">
+                <CircularProgress size="1rem" color="primary" />
+                 <Typography>Fetching summary</Typography>
+              </div>
+            ) : related.length ? (
               <div>
                 <Typography variant="h6">Recent issues</Typography>
                 <RelatedIssues
@@ -206,11 +239,7 @@ const Post = () => {
                   sendRelated={getRelated}
                 />
               </div>
-            ) : relatedspin ? (
-              <div className="text-center mx-auto m-y-3">
-                <CircularProgress size="1rem" color="primary" />
-              </div>
-            ) : null}
+            ) :  <Typography>No details found</Typography>}
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
             {" "}
@@ -233,16 +262,17 @@ const Post = () => {
             )}
           </Grid>
           <Grid item xs={false} md={3}>
-            {recent.length ? (
+            {recentspin ? (
+              <div className="text-center mx-auto my-3 p-4">
+                <CircularProgress size="3rem" color="primary" />
+                <Typography>Fetching recent posts</Typography>
+              </div>
+            ) : recent.length ? (
               <div>
                 <Typography variant="h6">Recent posts</Typography>
                 <RecentPosts recent={recent} sendRecent={getRecent} />{" "}
               </div>
-            ) : recentspin ? (
-              <div className="text-center mx-auto m-y-3">
-                <CircularProgress size="1rem" color="primary" />
-              </div>
-            ) : null}
+            ) :  <Typography>You have no recent posts</Typography>}
           </Grid>
         </Grid>
       ) : (
@@ -316,7 +346,7 @@ const PostDetails = ({
             size="small"
             color="primary"
             className="bg-success ml-1 my-2"
-            onClick={() => handleResolve(2)}
+            onClick={() => handleResolve(status, 2)}
           >
             {+status === 2 ? "Resolved" : "Resolve"}
           </Button>
@@ -326,7 +356,7 @@ const PostDetails = ({
   </Box>
 );
 
-const RecentPosts = ({ recent=[], sendRecent-f=>f }) => {
+const RecentPosts = ({ recent = [], sendRecent = (f) => f }) => {
   return (
     <List align="left">
       {recent.map((post) => (
@@ -362,7 +392,7 @@ const RelatedIssues = ({ relatedissues = [], sendRelated = (f) => f }) => {
           selected
           className={item.selected ? "bg-red-500 text-white" : "bg-white"}
           align="right"
-          onClick={() => sendRelated(item.issue)}
+          onClick={() => sendRelated(item.issue, item.issueId)}
         >
           <ListItemText primary={item.issue} />
           <Badge>{item.issuecount}</Badge>

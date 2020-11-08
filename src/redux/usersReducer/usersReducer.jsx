@@ -35,6 +35,11 @@ function usersReducer(state = initState, action) {
           (user) => +user.userdept === action.payload
         ),
         department: checkdept ? checkdept.dept : "",
+        userStats: state.userStats.map((stat) =>
+          stat.id === action.payload
+            ? { ...stat, clicked: true }
+            : { ...stat, clicked: false }
+        ),
       };
     case C.SEARCHED_USERS:
       return {

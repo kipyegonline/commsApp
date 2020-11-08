@@ -66,7 +66,7 @@ function DisplayIssues({
         {issues.map((item) => (
           <MenuItem key={item.altId} value={item.id}>
             {" "}
-            {/**Remove alt id suring prod */}
+            {/** Remove alt id suring prod */}
             {item.issue}
           </MenuItem>
         ))}

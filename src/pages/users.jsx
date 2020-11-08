@@ -68,7 +68,7 @@ function Users() {
 
   const dispatch = useDispatch();
   const fetchAllDepts = () => {
-    fetchData("/departments/fetchdepts").then((res) =>
+    fetchData("/departments/fetchdepts/true").then((res) =>
       dispatch(depts.addDepts(res))
     );
   };
@@ -120,6 +120,10 @@ function Users() {
       setForm(true);
     }
   };
+  const handleTableClik = (id) => {
+    console.log(id);
+    getSelected(id);
+  };
   // send edited data to redux store fetch new user
   const editData = (data, status) => editUser(data, status, dispatch);
   const closeEditor = () => setEditor(false);
@@ -150,7 +154,7 @@ function Users() {
               setEdit={setEdit}
               Edit={Edit}
               title="Edit User "
-              url="./server/users/users.php?edituser=true"
+              url="/users/edituser"
               updateData={editData}
               closeEditor={closeEditor}
             />
@@ -160,11 +164,15 @@ function Users() {
               isEditing={editor}
               updateData={editData}
               title="Add User"
-              url="./server/users/users.php?adduser=true"
+              url="/users/adduser"
             />
           )}
           {tableUsers.length > 0 ? (
-            <TableUsers users={users} depts={tableUsers} />
+            <TableUsers
+              users={users}
+              depts={tableUsers}
+              handleClick={handleTableClik}
+            />
           ) : null}
         </Grid>
         <Grid
@@ -227,7 +235,7 @@ function Users() {
 }
 export default Users;
 
-const TableUsers = ({ users = [], depts = [] }) => (
+const TableUsers = ({ users = [], depts = [], handleClick = (f) => f }) => (
   <Table>
     <caption>
       {users.length} members from
@@ -235,20 +243,30 @@ const TableUsers = ({ users = [], depts = [] }) => (
     </caption>
     <TableHead>
       <TableRow>
+        <TableCell scope="col">#</TableCell>
         <TableCell scope="col">Department</TableCell>
         <TableCell scope="col">Members</TableCell>
       </TableRow>
     </TableHead>
 
     <TableBody>
-      {depts.map((d) => (
-        <UserTable key={d.dept} user={d} />
+      {depts.map((d, i) => (
+        <UserTable
+          key={d.dept}
+          user={d}
+          index={i + 1}
+          handleClick={handleClick(d.id)}
+        />
       ))}
     </TableBody>
   </Table>
 );
-const UserTable = ({ user = [] }) => (
-  <TableRow>
+const UserTable = ({ user = {}, handleClick = (f) => f }) => (
+  <TableRow
+    onClick={handleClick}
+    className={user.clicked ? "bg-red-500 text-white" : "bg-white"}
+  >
+    <TableCell>{index}</TableCell>
     <TableCell>{user["dept"]}</TableCell>
     <TableCell>{user["members"]}</TableCell>
   </TableRow>

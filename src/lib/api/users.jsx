@@ -19,6 +19,7 @@ export const fetchStats = (url, dispatch) => {
   axios
     .get(url)
     .then((res) => {
+      res.map((item) => ({ ...item, clicked: false }));
       dispatch(useractions.setTableUsers(res.data));
     })
     .catch((error) => console.log("stats err", error));
@@ -26,7 +27,7 @@ export const fetchStats = (url, dispatch) => {
 
 export const deleteUser = (id, dispatch) => {
   dispatch(useractions.deleteUser(id));
-  fetch(`./server/users/users.php?deleteuser=true&userId=${id}`)
+  fetch(`/users/deleteuser?q=${id}`)
     .then((res) => res.json())
     .then((res) => {
       console.log(res);
@@ -41,7 +42,7 @@ export const editUser = (data, status, dispatch) => {
   } else {
     console.log("new user added");
     // fetch added user
-    fetchData("./server/users/users.php?fetchusers=true").then((res) =>
+    fetchData("/users/fetchusers").then((res) =>
       dispatch(useractions.addUser(res))
     );
   }
@@ -74,10 +75,9 @@ export const fetchLocalData = (dispatch) => {
   );
 };
 
-
 export const fetchSearch = (text, dispatch) => {
   axios
-    .get(`./server/users/users.php?getdeptsearch=true&keyword=${text}`)
+    .get(`/users/getdeptsearch?q=${text}`)
     .then((res) => {
       if (res.data) {
         dispatch(useractions.addsearched(res.data));
