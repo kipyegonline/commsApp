@@ -45,7 +45,7 @@ function postsReducer(state = initState, action) {
         ...state,
         posts: state.posts.map((post) =>
           post.altId === action.payload.altId
-            ? { ...post, status: action.payload.status }
+            ? { ...post, status: action.payload.newstatus }
             : { ...post }
         ),
       };

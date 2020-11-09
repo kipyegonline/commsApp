@@ -1,17 +1,10 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
-import $ from "jquery";
+import axios from "axios";
 import { v4 } from "uuid";
 import {
   Grid,
-  Button,
-  TextField,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Input,
-  Divider,
   FormHelperText,
   Card,
   CircularProgress,
@@ -20,14 +13,15 @@ import {
 import { Alert } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 import AddCircle from "@material-ui/icons/AddCircle";
-import { AddCircleOutlineRounded, DataUsageOutlined } from "@material-ui/icons";
+
 import Layout from "../components/Layout";
-import { InputGroup } from "reactstrap";
-import DisplayIssues, { ShowDepts, ShowUsers } from "../components/posts/post";
+
+import { ShowDepts, ShowUsers } from "../components/posts/post";
 import * as useractions from "../redux/usersReducer/actions";
 import * as userdepts from "../redux/departments/actions";
 import * as issueactions from "../redux/Issues/actions";
 import FetchDepts from "../lib/api/depts";
+import CustomerForm from "../components/customerIssues/customerform";
 import { getLocal, handleLocalStorage } from "../components/helpers";
 
 const useStyles = makeStyles({
@@ -52,11 +46,22 @@ const useStyles = makeStyles({
     margin: "0.25rem 0.15rem",
   },
 });
+// This cool custom hook courtesy of Eve Porcello
+const useInput = (initialValue) => {
+  const [value, setValue] = React.useState(initialValue);
+  return [
+    { value, onChange: (e) => setValue(e.target.value) },
+    () => setValue(initialValue),
+  ];
+};
 // mock auth
 const { uuid, userdept } = { uuid: 20, userdept: 5 };
+// context
+const CustomerContext = React.createContext();
+export const useCustomerContext = () => React.useContext(CustomerContext);
 
 function AddPost() {
-  const [clientName, setClientName] = React.useState("");
+  const [clientName, setClientName] = useInput("");
   const [clientPhone, setClientPhone] = React.useState("");
   const [clientEmail, setClientEmail] = React.useState("");
   const [clientOrg, setClientOrg] = React.useState("");
@@ -84,6 +89,7 @@ function AddPost() {
   // set classes and date
   const classes = useStyles();
   const today = new Date();
+  // Run side effects
   React.useEffect(() => {
     console.log("Effect, client Dept");
     if (!departments.length || !issues.length) {
@@ -98,35 +104,39 @@ function AddPost() {
 
   // fetch users from clicked department
   const fetchSelectedUsers = (id) => {
-    fetch(`./server/users/users.php?fetchSelectedUsers=true&id=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length > 0) {
+    axios
+      .get(`/users/fetchSelectedUser?q=${id}`)
+      .then((res) => {
+        if (!res.data.length || !Array.isArray(res.data)) {
           // add object property selected of false
-          return data.map((user) => ({ ...user, selected: false }));
+          throw new Error("There is no user from the selected department");
         }
-        throw new Error("No payload");
+        return res.data.map((user) => ({ ...user, selected: false }));
       })
       // send to redux
       .then((data) => dispatch(useractions.addselectedUsers(data)))
-      .catch((error) => console.log("fetch users error", error));
+      .catch((error) => setError(error.message))
+      .finally(() => setTimeout(setError(""), 3000));
   };
   // fetch selected issues according to dept
 
   const fetchSelectedIssues = (id) => {
-    fetch(`./server/issues/issues.php?fetchSelectedIssue=true&id=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length > 0) {
-          const fetchedIssues = data.map((item) => ({
-            ...item,
-            selected: false,
-          }));
-          dispatch(issueactions.addFetched(fetchedIssues));
+    axios
+      .get(`/issues/fetchSelectedIssue/${id}`)
+      .then((res) => {
+        if (!res.data.length || !Array.isArray(res.data)) {
+          throw new Error(
+            "There are no issues related to the selected department"
+          );
         }
-        throw new Error("No payload");
+        const fetchedIssues = res.data.map((item) => ({
+          ...item,
+          selected: false,
+        }));
+        dispatch(issueactions.addFetched(fetchedIssues));
       })
-      .catch((error) => console.log("fetch issue error", error));
+      .catch((error) => setError(error.message))
+      .finally(() => setTimeout(setError(""), 3000));
   };
   // handle  user actions
   const handleUser = (user) => {
@@ -154,6 +164,7 @@ function AddPost() {
       }
     }
   };
+
   const handleDept = (data) => {
     if (clientDept.includes(data.id)) {
       clientDept.splice(clientDept.indexOf(data.id), 1);
@@ -214,6 +225,7 @@ function AddPost() {
   };
 
   let holder = [];
+
   const appendHandlerToIssue = (handler, issues) => {
     handler.forEach((item) => {
       const res = issues.find((d) => d.userdept === item.userdept);
@@ -224,9 +236,10 @@ function AddPost() {
       }
     });
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (clientName.trim().length < 6) {
+    if (clientName.value.trim().length < 6) {
       setError("Kindly add a client or company name");
     } else if (issue.length < 1) {
       setError("Kindly select the nature of issue");
@@ -239,7 +252,7 @@ function AddPost() {
     } else if (handler.length < 1) {
       setError("Please click on the officer(s) to handle issue");
     } else if (
-      clientName.trim().length > 5 &&
+      clientName.value.trim().length > 5 &&
       issue.length > 0 &&
       subject.trim().length > 5 &&
       message.trim().length > 9 &&
@@ -253,7 +266,7 @@ function AddPost() {
       appendHandlerToIssue(handler, issues);
 
       const data = {
-        clientName,
+        clientName: clientName.value,
         clientPhone,
         clientEmail,
         clientOrg,
@@ -269,16 +282,12 @@ function AddPost() {
       console.log("dara", holder, data);
       //Remove on prod
       //handleLocalStorage(data, "posts");
-      $.ajax({
-        url: "./server/posts/posts.php?addposts=true",
-        dataType: "json",
-        cache: false,
-        type: "post",
-        data,
-      })
+
+      axios
+        .post("./server/posts/addposts", { ...data })
         .then((res) => {
           console.log("res", res);
-          if (res.status === 200) {
+          if (res.data.status === 200) {
             setSuccess(res.msg);
 
             // reset everything
@@ -287,7 +296,7 @@ function AddPost() {
               dispatch(userdepts.resetSelected([]));
               dispatch(issueactions.resetIssues([]));
               setSuccess();
-              setClientName("");
+              setClientName();
               setClientPhone("");
               setClientEmail("");
               setClientOrg("");
@@ -298,15 +307,16 @@ function AddPost() {
               setClientDept([]);
               holder = [];
               form.current.reset();
-              btn.current.disabled = false;
             }, 2000);
           } else {
             throw new Error(res.msg);
           }
         })
         .catch((error) => {
-          btn.current.disabled = false;
           console.log("BBC", error, error.statusText, error.message);
+        })
+        .finally(() => {
+          btn.current.disabled = false;
         });
     } else {
       setError(
@@ -314,148 +324,90 @@ function AddPost() {
       );
     }
   };
-
+  console.log(clientDept, clientName.value, "monday");
   return (
-    <Layout>
-      <Box className={classes.root}>
-        <form className="form" ref={form} onSubmit={handleSubmit}>
-          <h5 className="text-center alert alert-info p-2 my-2">
-            Add new issue - {today.toDateString()}
-          </h5>
-          <Grid container justify="space-evenly" alignItems="flex-start">
-            <Grid
-              item
-              xs
-              className={`my-3 p-2 card w-100 ${classes.grid}`}
-              style={{ border: "1px solid yellow" }}
+    <CustomerContext.Provider
+      value={{
+        classes,
+        issues,
+        btn,
+        success,
+        errormsg,
+        clientName,
+        setClientPhone,
+        setClientEmail,
+        setClientOrg,
+        handleIssue,
+        setSubject,
+        setMessage,
+        issue,
+      }}
+    >
+      <Layout>
+        <Box className={classes.root}>
+          <form className="form" ref={form} onSubmit={handleSubmit}>
+            <Typography
+              variant="body1"
+              className="text-center alert alert-info p-2 mt-2 sm:text-left"
             >
-              <p className="text-center">Customer details</p>
-              {/* item 1 */}
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="client-name">Enter Name</InputLabel>
-                <Input
-                  type="text"
-                  onChange={(e) => setClientName(e.target.value)}
-                  id="client-name"
-                  variant="outlined"
-                />
-              </FormControl>
-              {/* item 2 */}
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="client-phone">Enter Phone</InputLabel>
-                <Input
-                  type="telephone"
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  id="client-phone"
-                  variant="outlined"
-                  className={classes.input}
-                />
-              </FormControl>
-              {/* item 3 */}
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="client">Enter email</InputLabel>
-                <Input
-                  type="email"
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  id="client-email"
-                  label="Enter email"
-                  className={classes.input}
-                  variant="outlined"
-                />
-              </FormControl>
-              {/* item 3 */}
-              <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="client">Enter Organisation</InputLabel>
-                <Input
-                  type="text"
-                  onChange={(e) => setClientOrg(e.target.value)}
-                  id="client-org"
-                  label="Organisation"
-                  variant="outlined"
-                  className={classes.input}
-                />
-              </FormControl>
-              {/* issues list */}
-              {issues.length > 0 ? (
-                <DisplayIssues
-                  getIssue={handleIssue}
-                  issue={issue}
-                  issues={issues}
-                  multiple
-                />
-              ) : null}
-              {/** item 4 */}
+              Add Customer details - {today.toDateString()}
+            </Typography>
 
-              <TextField
-                label="subject"
-                variant="outlined"
-                onChange={(e) => setSubject(e.target.value)}
-                fullWidth
-                className={classes.textarea}
-              />
+            <Grid container justify="space-evenly" alignItems="flex-start">
+              <Grid item xs={12} lg={4} md={4} className={classes.grid}>
+                {/* eslint-disable no-nested-ternary */}
+                {departments.length ? (
+                  <div>
+                    <ShowDepts depts={departments} getDept={handleDept} />
 
-              <TextField
-                variant="outlined"
-                label="Add Description"
-                onChange={(e) => setMessage(e.target.value)}
-                rows={3}
-                size="medium"
-                focused
-                fullWidth
-                multiline
-                className={classes.textarea}
-              />
-              <FormHelperText error>{errormsg}</FormHelperText>
-              <FormHelperText className="alert alert-success">
-                {success}
-              </FormHelperText>
-              {/* submit btn */}
-              <Button
-                color="primary"
-                size="large"
-                variant="outlined"
-                type="submit"
-                ref={btn}
-                startIcon={<AddCircleOutlineRounded />}
+                    <Card>
+                      <small>Selected departments</small>
+                      <SelectedDepts depts={departments} />
+                    </Card>
+                  </div>
+                ) : !depterr ? (
+                  <div className="mx-auto my-4 p-4 text-center">
+                    <CircularProgress color="primary" size="3rem" />
+                    <Typography>Loading departments</Typography>
+                  </div>
+                ) : (
+                  <div className="mx-auto my-4 p-4 text-center">
+                    <Alert severity="warning">
+                      <p>{depterr}</p>
+                    </Alert>
+                  </div>
+                )}
+              </Grid>
+              {/** This grid display a list of users after a department is clicked */}
+              <Grid item xs={12} lg={4} md={4} className={classes.grid}>
+                {users.length > 0 ? (
+                  <ShowUsers users={users} getUser={handleUser} />
+                ) : departments.length ? (
+                  <div className="mx-auto my-4 p-4 text-center">
+                    <Alert severity="info">
+                      <Typography>
+                        {" "}
+                        Click on department to load users
+                      </Typography>
+                    </Alert>
+                  </div>
+                ) : null}
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                lg={4}
+                md={4}
+                className={`my-3 p-2 card w-100 ${classes.grid}`}
+                style={{ border: "1px solid yellow" }}
               >
-                Post Issue
-              </Button>
+                <CustomerForm />
+              </Grid>
             </Grid>
-            <Grid item xs className={classes.grid}>
-              {/* eslint-disable no-nested-ternary */}
-              {departments.length ? (
-                <div>
-                  <ShowDepts depts={departments} getDept={handleDept} />
-
-                  <Card>
-                    <small>Selected departments</small>
-                    <SelectedDepts depts={departments} />
-                  </Card>
-                </div>
-              ) : !depterr ? (
-                <div className="mx-auto my-4 p-4 text-center">
-                  <CircularProgress color="primary" size="3rem" />
-                  <Typography>Loading departments</Typography>
-                </div>
-              ) : (
-                <div className="mx-auto my-4 p-4 text-center">
-                  <Alert severity="warning">
-                    <p>{depterr}</p>
-                  </Alert>
-                </div>
-              )}
-            </Grid>
-            <Grid item xs className={classes.grid}>
-              {users.length > 0 ? (
-                <ShowUsers users={users} getUser={handleUser} />
-              ) : (
-                <p className="text-center">Click on department to load users</p>
-              )}
-            </Grid>
-          </Grid>
-        </form>
-      </Box>
-    </Layout>
+          </form>
+        </Box>
+      </Layout>
+    </CustomerContext.Provider>
   );
 }
 export default AddPost;

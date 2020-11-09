@@ -142,7 +142,7 @@ function Issues() {
                   variant="body2"
                   className="alert alert-primary text-center p-2 my-2"
                 >
-                  {dept.department || ""}
+                  {dept?.department || ""}
                 </Typography>
                 <IssueList issues={listIssues} deleteId={deleteValue} />
               </div>
@@ -154,7 +154,7 @@ function Issues() {
               <div className="mx-auto my-4 p-4 text-center">
                 <Alert severity="error">
                   {" "}
-                  <p>No issues found for this {dept.department}.</p>
+                  <p>No issues found for {dept?.department || ""}.</p>
                 </Alert>{" "}
               </div>
             )}
@@ -184,13 +184,7 @@ const AddIssues = ({
   const classes = useclass();
   const form = React.useRef(null);
   const btn = React.useRef(null);
-  userdept = {
-    id: 9,
-    department: "Corporate Comms",
-    altName: "PR.",
-    alt_id: "fa79c125-7105-4915-b716-c1df86af5eca",
-    selected: false,
-  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -235,10 +229,10 @@ const AddIssues = ({
   return (
     <div>
       <form className={classes.form} ref={form} onSubmit={handleSubmit}>
-        <p>Add issues for {userdept.altName || ""} department</p>
+        <Typography>{userdept?.altName || ""} department</Typography>
         <FormControl>
           <FormHelperText className="text-danger my-2">
-            {userdept.altName || ""}{" "}
+            {userdept?.altName || ""}{" "}
           </FormHelperText>
           <TextField
             label="Add issue(s)"
@@ -296,7 +290,7 @@ const IssueList = ({ issues = [], deleteId = (f) => f }) => {
         {issues.slice(start, end).map((issue, i) => (
           <ListItem key={issue.altId} divider alignItems="flex-start">
             <small>{start + i + 1}</small>
-            <ListItemText primary={issue.issue} secondary={issue.altId} />
+            <ListItemText primary={issue.issue} />
             <ListItemIcon>
               <Delete onClick={() => deleteItem(issue.altId)} />
             </ListItemIcon>

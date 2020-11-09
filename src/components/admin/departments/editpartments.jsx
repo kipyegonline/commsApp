@@ -44,7 +44,8 @@ function EditDepartments({
     axios
       .post("/departments/editdept/true", { ...editedData })
       .then((res) => {
-        if (res.status === 200) {
+        const { data } = res;
+        if (data.status === 200) {
           fetchDepts("/departments/fetchdepts/true", dispatch);
           setEditing(false);
           setSuccess(res.msg);

@@ -16,7 +16,7 @@ import MuiAlert from "@material-ui/lab/Alert";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Search from "@material-ui/icons/Search";
 import { Close, CloseRounded } from "@material-ui/icons";
-import axios from "axios"
+import axios from "axios";
 import { Grid } from "@material-ui/core";
 import { v4 } from "uuid";
 import FormHelperText from "@material-ui/core/FormHelperText";
@@ -116,7 +116,7 @@ function AddUser({
       userphone.trim().length === 0
         ? setError("Enter users phone number")
         : setError("Check the phone number");
-    } else if (userdept.trim().length < 1) {
+    } else if (userdept < 1) {
       setError("Choose Department");
     } else if (useremail.trim().length < 6) {
       setError("Please enter an email address");
@@ -180,7 +180,7 @@ function AddUser({
         userphone: userphone.trim(),
         usertitle: usertitle.trim(),
         useremail: useremail.trim(),
-        userdept: userdept.trim(),
+        userdept,
         userpassword: userpassword.trim(),
         userAltId: v4(),
       };
@@ -193,7 +193,7 @@ function AddUser({
             userphone: userphone.trim(),
             usertitle: usertitle.trim(),
             useremail: useremail.trim(),
-            userdept: userdept.trim(),
+            userdept,
             userpassword: userpassword.trim(),
           })
         : data;
@@ -202,19 +202,18 @@ function AddUser({
       editing && updateData(data, true);
       // then send to server via jquery ajax, url sent via props
 
-     axios.post(url,{
-      
-        ...data
-        
-      })
+      axios
+        .post(url, {
+          ...data,
+        })
 
         .then((res) => {
           // immediately fetch added user from server
           console.log("user added or edited", editing, res);
           editing === false ? updateData({}, false) : null;
 
-          if (res.status === 200) {
-            setSuccess(res.msg);
+          if (res.data.status === 200) {
+            setSuccess(res.data.msg);
             btn.current.disabled = false;
             setSpin(false);
             form.current.reset();
@@ -236,7 +235,7 @@ function AddUser({
               }
             }, 2000);
           } else {
-            throw new Error(res.msg);
+            throw new Error(res.data.msg);
           }
         })
         .catch((error) => {

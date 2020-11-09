@@ -6,9 +6,9 @@ import { getLocal, handleLocalStorage } from "../../components/helpers";
 
 export const fetchData = async (url) => {
   try {
-    const res = await fetch(url);
+    const res = await axios.get(url);
     if (res.statusText) {
-      const data = await res.json();
+      const { data } = res;
       return data;
     }
   } catch (error) {
@@ -19,8 +19,11 @@ export const fetchStats = (url, dispatch) => {
   axios
     .get(url)
     .then((res) => {
-      res.map((item) => ({ ...item, clicked: false }));
-      dispatch(useractions.setTableUsers(res.data));
+      if (!res.data.length || !Array.isArray(res.data))
+        throw new Error("No data found");
+
+      const stats = res.data.map((item) => ({ ...item, clicked: false }));
+      dispatch(useractions.setTableUsers(stats));
     })
     .catch((error) => console.log("stats err", error));
 };
@@ -79,10 +82,10 @@ export const fetchSearch = (text, dispatch) => {
   axios
     .get(`/users/getdeptsearch?q=${text}`)
     .then((res) => {
-      if (res.data) {
-        dispatch(useractions.addsearched(res.data));
+      if (!res?.data.length || !Array.isArray(res.data)) {
+        throw new Error("No data found...");
       } else {
-        dispatch(useractions.addsearched([]));
+        dispatch(useractions.addsearched(res.data));
       }
     })
     .catch((error) => console.log(error));

@@ -142,8 +142,8 @@ export const AddUsers = ({ fetchDepts }) => {
           altId: v4(),
         })
         .then((res) => {
-          console.log(res, "feed");
-          if (res.status === 200) {
+          const { data } = res;
+          if (data.status === 200) {
             setSuccess(res.msg);
             // refetch from server
 

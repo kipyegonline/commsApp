@@ -3,28 +3,22 @@ import Router, { useRouter } from "next/router";
 import Link from "next/link";
 import axios from "axios";
 import { makeStyles } from "@material-ui/core/styles";
-import { useDispatch, useSelector, ReactReduxContext } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Box,
-  Card,
-  Paper,
   Grid,
   CircularProgress,
   Divider,
   Typography,
-  ButtonGroup,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Badge,
-  Button,
 } from "@material-ui/core";
+import Notifications from "@material-ui/icons/NotificationImportant";
 import Skeleton from "@material-ui/lab/Skeleton";
 import * as postactions from "../../redux/posts/actions";
-import * as issueactions from "../../redux/Issues/actions";
 import Comments from "../../components/posts/comments";
 import Layout from "../../components/Layout";
+import PostDetails from "../../components/posts/PostDetails";
+import RecentPosts from "../../components/posts/RecentPosts";
+import RelatedIssues from "../../components/posts/RelatedIssues";
 
 const useStyles = makeStyles({
   grid: {
@@ -90,7 +84,6 @@ const Post = () => {
   // fetch issues
 
   const fetchRelatedIssues = (uuid) => {
-  
     axios
       .get(`/posts/fetchRelatedIssues/${uuid}/${issue}`)
       .then((res) => {
@@ -108,7 +101,6 @@ const Post = () => {
   // fetch 5 recent posts minus the one under review
 
   const fetchRecentPosts = (userId, issue, recent) => {
-   
     axios
       .get(`/posts/fetchrecentposts/${issue}/${userId}/`)
       .then((res) => {
@@ -171,19 +163,19 @@ const Post = () => {
         ? { ...item, selected: true }
         : { ...item, slected: false }
     );
+    console.log(issue, id, "recentponts");
     setRelated(issues);
     fetchPostsForRecent(uuid, id);
   };
 
   const handleResolve = (current, newstatus) => {
     if (current === newstatus) return;
-       dispatch(postactions.resolveIssue({ status, altId: issue }));
+    dispatch(postactions.resolveIssue({ newstatus, altId: issue }));
     axios
       .get(`/posts/resolveissue/${issue}/${uuid}?status=${newstatus}`)
       .then((res) => {
-        console.log(res, "resol");
-        if (res.status === 2) fetchRecentPosts(uuid, issue, false);
-     
+        const { data } = res;
+        if (data.status === 2) fetchRecentPosts(uuid, issue, false);
       })
       .catch((error) => console.log(error));
   };
@@ -219,7 +211,7 @@ const Post = () => {
   const getValue = (data) => {
     dispatch(postactions.addComment(data));
   };
-  console.log(related,relatedSpin,recentspin "related stats");
+
   return (
     <Layout title={post.clientName || "Post"}>
       {!reloading ? (
@@ -229,17 +221,19 @@ const Post = () => {
             {relatedspin ? (
               <div className="text-center mx-auto my-3 p-4">
                 <CircularProgress size="1rem" color="primary" />
-                 <Typography>Fetching summary</Typography>
+                <Typography>Fetching summary</Typography>
               </div>
             ) : related.length ? (
               <div>
                 <Typography variant="h6">Recent issues</Typography>
                 <RelatedIssues
-                  relatedissues={issues}
+                  relatedissues={related}
                   sendRelated={getRelated}
                 />
               </div>
-            ) :  <Typography>No details found</Typography>}
+            ) : (
+              <Typography>No details found</Typography>
+            )}
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
             {" "}
@@ -272,7 +266,9 @@ const Post = () => {
                 <Typography variant="h6">Recent posts</Typography>
                 <RecentPosts recent={recent} sendRecent={getRecent} />{" "}
               </div>
-            ) :  <Typography>You have no recent posts</Typography>}
+            ) : (
+              <Typography>You have no recent posts</Typography>
+            )}
           </Grid>
         </Grid>
       ) : (
@@ -290,114 +286,3 @@ const Post = () => {
 };
 
 export default Post;
-
-const PostDetails = ({
-  issue,
-  clientOrg,
-  clientPhone,
-  clientEmail,
-  clientName,
-  subject,
-  message,
-  addedBy,
-  handler_id,
-  adder,
-  status,
-  addedon,
-  handleResolve,
-}) => (
-  <Box className="my-2 p-2">
-    <Typography variant="h6"> {subject}</Typography>
-    <Divider />
-    <Box>
-      <Typography> {message}</Typography>
-    </Box>
-
-    <Divider />
-    <Box>
-      <h6>Name: {clientName}</h6>
-      <h6>
-        Contacts: {clientPhone}, ({clientEmail})
-      </h6>
-      <h6>Company/location: {clientOrg}</h6>
-    </Box>
-    <Box>
-      <small>
-        {" "}
-        Added by {<b>{+adder === uuid ? "You" : addedBy} </b>} on {addedon}
-      </small>
-      <Typography>Status: {+status}</Typography>
-    </Box>
-    <Box>
-      {/* Restriction */}
-      {Number(handler_id) === uuid ? (
-        <ButtonGroup className="my-2">
-          <Button
-            variant={+status === 1 ? "contained" : "outlined"}
-            size="small"
-            color="primary"
-            className="mr-2 my-2"
-            onClick={() => handleResolve(1)}
-          >
-            {+status === 1 ? "In Progress" : "Put in progress"}
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="primary"
-            className="bg-success ml-1 my-2"
-            onClick={() => handleResolve(status, 2)}
-          >
-            {+status === 2 ? "Resolved" : "Resolve"}
-          </Button>
-        </ButtonGroup>
-      ) : null}
-    </Box>
-  </Box>
-);
-
-const RecentPosts = ({ recent = [], sendRecent = (f) => f }) => {
-  return (
-    <List align="left">
-      {recent.map((post) => (
-        <ListItem
-          key={post.id}
-          button
-          divider
-          selected
-          className={post.selected ? "bg-danger text-white" : "bg-light"}
-          align="right"
-          onClick={() => sendRecent(post)}
-        >
-          <ListItemText primary={post.subject} secondary={post.clientName} />
-        </ListItem>
-      ))}
-      <ListItem>
-        <Link href="/posts">
-          <a> Back to posts</a>
-        </Link>
-      </ListItem>
-    </List>
-  );
-};
-
-const RelatedIssues = ({ relatedissues = [], sendRelated = (f) => f }) => {
-  return (
-    <List align="left">
-      {relatedissues.map((item, i) => (
-        <ListItem
-          key={item.id}
-          button
-          divider
-          selected
-          className={item.selected ? "bg-red-500 text-white" : "bg-white"}
-          align="right"
-          onClick={() => sendRelated(item.issue, item.issueId)}
-        >
-          <ListItemText primary={item.issue} />
-          <Badge>{item.issuecount}</Badge>
-        </ListItem>
-      ))}
-    </List>
-  );
-};
