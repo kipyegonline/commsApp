@@ -1,4 +1,5 @@
 import React from "react";
+import Router from "next/router";
 
 import {
   Grid,
@@ -11,6 +12,7 @@ import {
   Button,
   ButtonGroup,
   Box,
+  Typography,
 } from "@material-ui/core";
 import Skeleton from "@material-ui/lab";
 import { makeStyles } from "@material-ui/core/styles";
@@ -30,6 +32,7 @@ import {
 
 import * as depts from "../redux/departments/actions";
 import * as actions from "../redux/usersReducer/actions";
+import { typography } from "@material-ui/system";
 
 const useStyles = makeStyles({
   root: {
@@ -62,25 +65,33 @@ function Users() {
   // initiliazie classes and state
   const classes = useStyles();
 
-  const [Edit, setEdit] = React.useState({});
-  const [editor, setEditor] = React.useState(false);
-  const [showForm, setForm] = React.useState(false);
-
   const dispatch = useDispatch();
   const fetchAllDepts = () => {
-    fetchData("/departments/fetchdepts/true").then((res) =>
-      dispatch(depts.addDepts(res))
-    );
+    fetchData("/departments/fetchdepts/true", dispatch)
+      .then((res) => {
+        if (!res.length || !Array.isArray(res)) {
+          throw Error("No payload found");
+        } else {
+          dispatch(depts.addDepts(res));
+        }
+      })
+      .catch((error) => dispatch(actions.addError(error.message)));
   };
   const fetchAllUsers = () => {
-    fetchData("/users/fetchusers").then((res) =>
-      dispatch(actions.addUser(res))
-    );
+    fetchData("/users/fetchusers", dispatch)
+      .then((res) => {
+        if (!res.length || !Array.isArray(res)) {
+          throw Error("No payload found");
+        } else {
+          dispatch(actions.addUser(res));
+        }
+      })
+      .catch((error) => dispatch(actions.addError(error.message)));
   };
   React.useEffect(() => {
     // fetch data
 
-    //fetchLocalData(dispatch);
+    // fetchLocalData(dispatch);
 
     // get the departments and users
 
@@ -98,12 +109,14 @@ function Users() {
     tableUsers,
     sectionUsers: section,
     department,
+    errmsg,
   } = useSelector((state) => ({
     departments: state.departments.departments,
     users: state.users.users,
     tableUsers: state.users.userStats,
     sectionUsers: state.users.sectionUsers,
     department: state.users.department,
+    errmsg: state.users.errors,
   }));
   // event handlers
 
@@ -111,22 +124,10 @@ function Users() {
   const handleDelete = (id) => {
     if (confirm("Delete user?")) deleteUser(id, dispatch);
   };
-  // edit form,selected data for edit
-  const handleEdit = (editId) => {
-    const selectedUser = users.find((user) => user.id === editId);
-    if (selectedUser) {
-      setEdit(selectedUser);
-      setEditor(true);
-      setForm(true);
-    }
+
+  const handleTableClick = (id) => {
+    getSelected(id, dispatch);
   };
-  const handleTableClik = (id) => {
-    console.log(id);
-    getSelected(id);
-  };
-  // send edited data to redux store fetch new user
-  const editData = (data, status) => editUser(data, status, dispatch);
-  const closeEditor = () => setEditor(false);
 
   return (
     <Layout>
@@ -146,32 +147,11 @@ function Users() {
           className={`${classes.root} mt-5`}
           component="div"
         >
-          {/* Edit user */}
-          {editor ? (
-            <AddUser
-              depts={departments}
-              isEditing={editor}
-              setEdit={setEdit}
-              Edit={Edit}
-              title="Edit User "
-              url="/users/edituser"
-              updateData={editData}
-              closeEditor={closeEditor}
-            />
-          ) : (
-            <AddUser
-              depts={departments}
-              isEditing={editor}
-              updateData={editData}
-              title="Add User"
-              url="/users/adduser"
-            />
-          )}
           {tableUsers.length > 0 ? (
             <TableUsers
               users={users}
               depts={tableUsers}
-              handleClick={handleTableClik}
+              handleClick={handleTableClick}
             />
           ) : null}
         </Grid>
@@ -186,11 +166,7 @@ function Users() {
             <Grid item>
               {" "}
               {departments.length > 0 ? (
-                <AddDept
-                  depts={departments}
-                  department={department}
-                  sendValue={getSelected}
-                />
+                <AddDept depts={departments} sendValue={getSelected} />
               ) : null}
             </Grid>
             <Grid item>
@@ -213,20 +189,16 @@ function Users() {
                   color="primary"
                   size="small"
                   className=" ml-2"
-                  onClick={() => setEditor(false)}
+                  onClick={() => Router.push("/user?q=add")}
                 >
-                  {editor ? "Editing user" : "Add User"}
+                  Add new User
                 </Button>
               </ButtonGroup>
             </Grid>
           </Grid>
-
+          <Typography error>{!section.length && errmsg}</Typography>
           {section.length > 0 ? (
-            <ShowUsers
-              users={section}
-              deleteKey={handleDelete}
-              editKey={handleEdit}
-            />
+            <ShowUsers users={section} deleteKey={handleDelete} />
           ) : null}
         </Grid>
       </Grid>
@@ -255,16 +227,16 @@ const TableUsers = ({ users = [], depts = [], handleClick = (f) => f }) => (
           key={d.dept}
           user={d}
           index={i + 1}
-          handleClick={handleClick(d.id)}
+          handleClick={() => handleClick(d.id)}
         />
       ))}
     </TableBody>
   </Table>
 );
-const UserTable = ({ user = {}, handleClick = (f) => f }) => (
+const UserTable = ({ user = {}, handleClick = (f) => f, index }) => (
   <TableRow
     onClick={handleClick}
-    className={user.clicked ? "bg-red-500 text-white" : "bg-white"}
+    className={user.clicked ? "bg-red-800 text-white" : "bg-white"}
   >
     <TableCell>{index}</TableCell>
     <TableCell>{user["dept"]}</TableCell>

@@ -12,7 +12,7 @@ export const fetchData = async (url) => {
       return data;
     }
   } catch (error) {
-    return [];
+    dispatch(useractions.addError(error.message));
   }
 };
 export const fetchStats = (url, dispatch) => {
@@ -25,7 +25,7 @@ export const fetchStats = (url, dispatch) => {
       const stats = res.data.map((item) => ({ ...item, clicked: false }));
       dispatch(useractions.setTableUsers(stats));
     })
-    .catch((error) => console.log("stats err", error));
+    .catch((error) => dispatch(useractions.addError(error.message)));
 };
 
 export const deleteUser = (id, dispatch) => {
@@ -41,9 +41,7 @@ export const deleteUser = (id, dispatch) => {
 export const editUser = (data, status, dispatch) => {
   if (status === true) {
     dispatch(useractions.editUser(data));
-    console.log("editing user");
   } else {
-    console.log("new user added");
     // fetch added user
     fetchData("/users/fetchusers").then((res) =>
       dispatch(useractions.addUser(res))
@@ -52,7 +50,7 @@ export const editUser = (data, status, dispatch) => {
 };
 // get selected dept
 export const getSelected = (e = 1, dispatch) => {
-  const id = +e.target.value;
+  const id = e.target === undefined ? e : +e.target.value;
 
   if (id < 1) return;
   dispatch(useractions.addsection(id));
@@ -88,9 +86,5 @@ export const fetchSearch = (text, dispatch) => {
         dispatch(useractions.addsearched(res.data));
       }
     })
-    .catch((error) => console.log(error));
+    .catch((error) => dispatch(useractions.addError(error.message)));
 };
-
-export const useAuth = () =>
-  globalThis.Window && JSON.parse(localStorage.getItem("commsApp"));
-export const removeAuth = () => localStorage.removeItem("commsApp");

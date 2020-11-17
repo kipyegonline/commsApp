@@ -34,7 +34,7 @@ import {
   NavLink,
 } from "reactstrap";
 import Button from "@material-ui/core/Button";
-import { removeAuth, useAuth } from "../lib/api/users";
+import { removeAuth, useAuth } from "./Layout";
 
 const useStyles = makeStyles({
   nav: {
@@ -80,6 +80,7 @@ Router.onRouteError = () => NProgress.done();
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(useAuth());
   const classes = useStyles();
   const { pathname } = useRouter();
   const [isMobile, setMobile] = useState(false);
@@ -90,7 +91,7 @@ const NavBar = () => {
   const handleLogout = () => {
     removeAuth();
 
-    location.reload();
+    //location.reload();
     Router.push("/login");
   };
 
@@ -111,7 +112,7 @@ const NavBar = () => {
 
       <div className={classes.nav}>
         <Typography color="secondary" variant="subtitle1">
-          Mailtracker
+          {user.username}
         </Typography>
 
         <Typography
@@ -286,18 +287,18 @@ const MobileMenu = () => (
               <IconButton>
                 <Issues />
               </IconButton>
-              Issues
+              Issuessssss
             </NavLink>
           </Link>
         </Typography>
 
         <div>
           <Button
-            color="secondary"
+            color="primary"
             variant="contained"
             onClick={() => Router.push("/add-post")}
           >
-            Add post
+            Create
           </Button>
         </div>
         <Typography variant="title">
@@ -306,7 +307,7 @@ const MobileMenu = () => (
               <IconButton color="secondary" onClick={handleLogout}>
                 <Exit />
               </IconButton>
-              log out
+              logg out
             </NavLink>
           </Link>
         </Typography>

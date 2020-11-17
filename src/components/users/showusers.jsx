@@ -16,8 +16,9 @@ import {
 } from "@material-ui/core";
 import { Delete, Edit } from "@material-ui/icons";
 import Pagination from "@material-ui/lab/Pagination";
+import Router from "next/router";
 
-function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
+function ShowUsers({ users = [], deleteKey = (f) => f }) {
   const [current, setCurrent] = React.useState(0);
   const perpage = users.length > 10 ? 10 : users.length;
   const pages = Math.ceil(users.length / perpage);
@@ -33,7 +34,6 @@ function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
       <TableUsers
         users={users.slice(start, end)}
         deleteKey={deleteKey}
-        editKey={editKey}
         start={start}
       />
       {users.length > 10 ? (
@@ -50,43 +50,13 @@ function ShowUsers({ users = [], deleteKey = (f) => f, editKey = (f) => f }) {
     </>
   );
 }
-const User = ({
-  username,
-  id,
-  department,
-  userdept,
-  userphone,
-  useremail,
-  usertitle,
-  deleteKey,
-  editKey,
-  index,
-}) => {
-  return (
-    <ListItem className="card my-2 p-3" divider alignItems="flex-start">
-      <Box component="div">
-        <p className="font-weight-bold">
-          {index + 1}. {username}{" "}
-        </p>
 
-        <FormHelperText>Department: {department}</FormHelperText>
-        <FormHelperText>Title: {usertitle}</FormHelperText>
-        <FormHelperText>Email: {useremail}</FormHelperText>
-        <FormHelperText>Phone: {userphone}</FormHelperText>
-        <ListItemIcon component="span" className="ml-3">
-          <Delete color="secondary" onClick={() => deleteKey(id)} /> |
-          <Edit color="primary" onClick={() => editKey(id)} />
-        </ListItemIcon>
-      </Box>
-    </ListItem>
-  );
-};
 export default ShowUsers;
 
 const TableUsers = ({
   users = [],
   deleteKey = (f) => f,
-  editKey = (f) => f,
+
   start = 0,
 }) => {
   return (
@@ -106,11 +76,10 @@ const TableUsers = ({
         </TableHead>
         <TableBody>
           {users.map((user, i) => (
-            <PureTableList
+            <TableList
               key={user.id}
               {...user}
               deleteKey={deleteKey}
-              editKey={editKey}
               index={i + start}
             />
           ))}
@@ -128,7 +97,7 @@ const TableList = ({
   useremail,
   usertitle,
   deleteKey,
-  editKey,
+  userAltId,
   dept,
   index,
 }) => (
@@ -140,13 +109,13 @@ const TableList = ({
     <TableCell>{useremail}</TableCell>
     <TableCell>{userphone}</TableCell>
     <TableCell>
-      <IconButton onClick={() => editKey(id)}>
-        <Edit color="primary" />
+      <IconButton onClick={() => Router.push(`/user?q=${userAltId}`)}>
+        <Edit color="primary" fontSize="small" />
       </IconButton>
     </TableCell>
     <TableCell>
       <IconButton onClick={() => deleteKey(id)}>
-        <Delete color="secondary" />
+        <Delete color="secondary" fontSize="small" />
       </IconButton>
     </TableCell>
   </TableRow>

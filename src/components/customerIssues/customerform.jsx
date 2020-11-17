@@ -77,12 +77,7 @@ function CustomerForm() {
       </FormControl>
       {/* issues list */}
       {issues.length > 0 ? (
-        <DisplayIssues
-          getIssue={handleIssue}
-          issue={issue}
-          issues={issues}
-          multiple
-        />
+        <DisplayIssues getIssue={handleIssue} issue={issue} issues={issues} />
       ) : null}
       {/** item 4 */}
 

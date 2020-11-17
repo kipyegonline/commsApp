@@ -48,14 +48,14 @@ function EditDepartments({
         if (data.status === 200) {
           fetchDepts("/departments/fetchdepts/true", dispatch);
           setEditing(false);
-          setSuccess(res.msg);
+          setSuccess(data.msg);
           setTimeout(() => {
             setDept("");
             setDeptNick("");
             setSuccess("");
           }, 2000);
         } else {
-          throw new Error(res.msg);
+          throw new Error(data.msg);
         }
       })
       .catch((error) => {

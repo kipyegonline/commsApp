@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { Grid, Container, Divider } from "@material-ui/core";
 import * as postactions from "../redux/posts/actions";
-import Layout from "../components/Layout";
+import Layout, { useAuth } from "../components/Layout";
 import FetchDepts from "../lib/api/depts";
 
 const Home = () => {
@@ -18,8 +18,11 @@ const Home = () => {
       .catch((error) => console.error("fetch posts:", error));
   };
   React.useEffect(() => {
-    fetchLaravel(20);
-    FetchDepts("/departments/fetchdepts/true", dispatch);
+    const { uuid, userdept } = useAuth();
+    if (uuid) {
+      fetchLaravel(uuid);
+      FetchDepts("/departments/fetchdepts/true", dispatch);
+    }
   }, []);
 
   return (

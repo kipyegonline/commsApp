@@ -48,6 +48,7 @@ function postsReducer(state = initState, action) {
             ? { ...post, status: action.payload.newstatus }
             : { ...post }
         ),
+        post: { ...state.post, status: action.payload.newstatus },
       };
     case C.ADD_COMMENTS:
       return {

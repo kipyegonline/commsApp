@@ -1,4 +1,5 @@
 import React from "react";
+import Router from "next/router";
 import PropTypes from "prop-types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Input from "@material-ui/core/Input";
@@ -30,7 +31,6 @@ const useStyles = makeStyles(
       display: "inline-flex",
       flexDirection: "row",
       margin: ".25rem .35rem ",
-      border: "1px solid red",
     },
     formControl: {
       display: "flex",
@@ -103,6 +103,8 @@ function AddUser({
       setuserDept(Edit.userdept);
     }
   }, [Edit]);
+
+  React.useEffect(() => setEditing(isEditing), [isEditing]);
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -132,7 +134,7 @@ function AddUser({
       userphone.trim().length > 6 &&
       usertitle.trim().length > 0 &&
       useremail.trim().length > 6 &&
-      userdept.length > 0 &&
+      userdept > 0 &&
       userpassword.trim().length > 5
     ) {
       // disable button
@@ -199,7 +201,7 @@ function AddUser({
         : data;
 
       // also update redux state if we're editing
-      editing && updateData(data, true);
+      editing && updateData(data);
       // then send to server via jquery ajax, url sent via props
 
       axios
@@ -209,7 +211,7 @@ function AddUser({
 
         .then((res) => {
           // immediately fetch added user from server
-          console.log("user added or edited", editing, res);
+          console.log(`user ${editing} ? "edited" :"added" \n`, res);
           editing === false ? updateData({}, false) : null;
 
           if (res.data.status === 200) {
@@ -219,7 +221,6 @@ function AddUser({
             form.current.reset();
             setTimeout(() => {
               setSuccess("");
-
               setUsername("");
               setUserPhone("");
               setUserTitle();
@@ -232,8 +233,9 @@ function AddUser({
                 setEditing(false);
                 closeEditor(false);
                 setEdit({});
+                //updateData(data)
               }
-            }, 2000);
+            }, 3000);
           } else {
             throw new Error(res.data.msg);
           }
@@ -252,10 +254,12 @@ function AddUser({
   return (
     <form
       style={{
-        margin: ".5rem auto",
-        padding: "1rem",
-        border: "1px solid red",
-        boxShadow: "-2px -2px 5px red, 2px 2px 5px red",
+        margin: "1rem auto",
+        padding: "2rem",
+        width: "50%",
+        maxWidth: 500,
+        background: "#ddd",
+        boxShadow: "-2px -2px 5px white, 2px 2px 5px white",
       }}
       noValidate
       autoComplete="off"
@@ -265,7 +269,7 @@ function AddUser({
       onSubmit={handleSubmit}
       ref={form}
     >
-      {/*close icons for edit form */}
+      {/* close icons for edit form */}
       {editing ? (
         <CloseRounded
           className="float-right"
@@ -349,6 +353,7 @@ function AddUser({
           <CircularProgress />
         </p>
       ) : null}
+      {successmsg && <Alert severity="success">{successmsg}</Alert>}
       <SimpleSnackbar show={!!successmsg} message={successmsg} />
       <Button
         variant="contained"
@@ -384,22 +389,15 @@ AddUser.propTypes = {
 };
 export default AddUser;
 
-export const AddDept = ({
-  depts = [],
-  sendValue = (f) => f,
-  userdept = "",
-  department = "",
-}) => {
-  const [dept, setdept] = React.useState(userdept);
+export const AddDept = ({ depts = [], sendValue = (f) => f }) => {
+  const [dept, setdept] = React.useState("");
   const dispatch = useDispatch();
-
-  React.useEffect(() => {
-    setdept(userdept);
-  }, [userdept]);
+  const [department, setDepartment] = React.useState({});
 
   const handleChange = (e) => {
-    //setdept(e.target.value);
+    setdept(e.target.value);
     sendValue(e, dispatch);
+    setDepartment(depts.find((d) => d.id === +e.target.value));
   };
   return (
     <FormControl variant="filled">
@@ -422,7 +420,7 @@ export const AddDept = ({
         ))}
       </Select>
       <Typography className="my-1 p-1" variant="subtitle2">
-        {department || ""}
+        {department?.department}
       </Typography>
     </FormControl>
   );

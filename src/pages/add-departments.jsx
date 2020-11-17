@@ -144,7 +144,7 @@ export const AddUsers = ({ fetchDepts }) => {
         .then((res) => {
           const { data } = res;
           if (data.status === 200) {
-            setSuccess(res.msg);
+            setSuccess(data.msg);
             // refetch from server
 
             fetchDepts("/departments/fetchdepts/true", dispatch);

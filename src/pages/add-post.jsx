@@ -14,7 +14,7 @@ import { Alert } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 import AddCircle from "@material-ui/icons/AddCircle";
 
-import Layout from "../components/Layout";
+import Layout, { useAuth } from "../components/Layout";
 
 import { ShowDepts, ShowUsers } from "../components/posts/post";
 import * as useractions from "../redux/usersReducer/actions";
@@ -54,8 +54,8 @@ const useInput = (initialValue) => {
     () => setValue(initialValue),
   ];
 };
-// mock auth
-const { uuid, userdept } = { uuid: 20, userdept: 5 };
+//  auth
+let uuid, userdept;
 // context
 const CustomerContext = React.createContext();
 export const useCustomerContext = () => React.useContext(CustomerContext);
@@ -91,21 +91,25 @@ function AddPost() {
   const today = new Date();
   // Run side effects
   React.useEffect(() => {
+    const { uuid: id, userdept: dept } = useAuth();
+    (uuid = id), (userdept = dept);
+
     console.log("Effect, client Dept");
     if (!departments.length || !issues.length) {
       FetchDepts("/departments/fetchdepts/true", dispatch);
     }
 
     return () => {
-      console.log("unmounting");
       dispatch(userdepts.resetSelected());
+      dispatch(useractions.resetSelected());
+      dispatch(issueactions.resetIssues());
     };
   }, []);
 
   // fetch users from clicked department
   const fetchSelectedUsers = (id) => {
     axios
-      .get(`/users/fetchSelectedUser?q=${id}`)
+      .get(`/posts/deptusersposts/${id}/${uuid}`)
       .then((res) => {
         if (!res.data.length || !Array.isArray(res.data)) {
           // add object property selected of false
@@ -259,7 +263,7 @@ function AddPost() {
       clientDept.length > 0 &&
       handler.length > 0
     ) {
-      //send to server
+      // send to server
       setError("");
       btn.current.disabled = true;
 
@@ -280,11 +284,11 @@ function AddPost() {
         addedon: new Date().toLocaleString(),
       };
       console.log("dara", holder, data);
-      //Remove on prod
-      //handleLocalStorage(data, "posts");
+      // Remove on prod
+      // handleLocalStorage(data, "posts");
 
       axios
-        .post("./server/posts/addposts", { ...data })
+        .post("/posts/addposts", { ...data })
         .then((res) => {
           console.log("res", res);
           if (res.data.status === 200) {

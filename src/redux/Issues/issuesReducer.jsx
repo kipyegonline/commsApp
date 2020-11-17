@@ -63,7 +63,7 @@ function issuesReducer(state = initState, action) {
     case C.ADD_FETCHED:
       return {
         ...state,
-        fetched: [...state.fetched, ...action.payload],
+        fetched: [...action.payload, ...state.fetched],
       };
     case C.REMOVE_FETCHED:
       return {

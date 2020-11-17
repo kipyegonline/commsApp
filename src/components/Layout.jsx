@@ -8,8 +8,12 @@ import Head from "next/head";
 import Header from "./Header";
 import NavBar from "./Nav";
 import Login from "../pages/login";
-import { useAuth } from "../lib/api/users";
 
+import ErrorBoundary, { ErrorScreen } from "../lib/api/Error";
+
+const BreakThings = () => {
+  throw new Error("We intentionally broke something");
+};
 const Layout = ({ children, title }) => {
   const data = useAuth();
 
@@ -25,41 +29,32 @@ const Layout = ({ children, title }) => {
       </Head>
       <Header />
       <NavBar />
-      <section style={{ height: "100vh", marginTop: ".15rem" }}>
-        {children}
-      </section>
-
-      <Grid
+      <section
         style={{
-          background: "purple",
-          padding: ".5rem 0",
-          color: "white",
-          position: "fixed",
-          left: 0,
-          bottom: 0,
-          lineHeight: "1em",
-          width: "98%",
+          minHeight: "100vh",
+          paddingBottom: 100,
+          marginTop: ".15rem",
         }}
       >
-        <Typography align="center" variant="body1">
-          Copyright &copy; {new Date().getFullYear()}
-        </Typography>
-      </Grid>
+        {children}
+      </section>
+      <Footer />
       <style global jsx>
         {`
           html {
             box-sizing: border-box;
             background: #ccc;
+            position: relative;
           }
           body {
             width: 100%;
             margin: 0 auto;
             padding: 0;
-            position: relative;
-            line-height: 1em;
-            font-family: helvetica;
+            line-height: 1.6em;
+            font-family: roboto;
             font-size: 1.2rem;
             height: 100%;
+
             background: #fff;
           }
         `}
@@ -75,7 +70,8 @@ const Layout = ({ children, title }) => {
     </Container>
   );
   if (globalThis.Window) {
-    if (data) return layout;
+    if (data)
+      return <ErrorBoundary error={ErrorScreen}>{layout}</ErrorBoundary>;
     Router.push("/login");
   }
 
@@ -91,6 +87,27 @@ export default Layout;
 Layout.defaultProps = {
   title: "Mailtracker",
 };
+const Footer = () => (
+  <Grid className="absolute bottom-0 left-0 bg-purple-800 mt-8 py-2 leading-snug text-white flex justify-center items-center w-full">
+    <Typography align="center" variant="body1">
+      Copyright &copy; {new Date().getFullYear()}
+    </Typography>
+  </Grid>
+);
+
+export const useAuth = () => {
+  if (globalThis.Window) {
+    const auth = JSON.parse(localStorage.getItem("commsApp"));
+
+    let uuidArr = auth?.uuid.split("-");
+
+    const uuid = uuidArr[uuidArr.length - 1];
+
+    return { ...auth, uuid };
+  }
+};
+
+export const removeAuth = () => localStorage.removeItem("commsApp");
 /*footer {
             width: 100%;
             height: 50px;

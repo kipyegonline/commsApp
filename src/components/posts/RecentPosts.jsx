@@ -17,19 +17,16 @@ const RecentPosts = ({ recent = [], sendRecent = (f) => f }) => {
   );
 };
 
-const RecentPost = memo(
-  ({ post = {}, sendRecent = (f) => f }) => (
-    <ListItem
-      button
-      divider
-      selected
-      className={post.selected ? "bg-danger text-white" : "bg-light"}
-      align="right"
-      onClick={() => sendRecent(post)}
-    >
-      <ListItemText primary={post.subject} secondary={post.clientName} />
-    </ListItem>
-  ),
-  (prevProps, nextProps) => prevProps.id === nextProps.id
+const RecentPost = ({ post = {}, sendRecent = (f) => f }) => (
+  <ListItem
+    button
+    divider
+    selected
+    className={post.selected ? "bg-danger text-white" : "bg-light"}
+    align="right"
+    onClick={() => sendRecent(post)}
+  >
+    <ListItemText primary={post.subject} secondary={post.clientName} />
+  </ListItem>
 );
 export default RecentPosts;

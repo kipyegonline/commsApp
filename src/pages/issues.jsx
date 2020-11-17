@@ -23,7 +23,7 @@ import {
 import { Alert } from "@material-ui/lab";
 import { Twitter, Facebook, Delete } from "@material-ui/icons";
 import Pagination from "@material-ui/lab/Pagination";
-import Layout from "../components/Layout";
+import Layout, { useAuth } from "../components/Layout";
 import { ShowDepts } from "../components/posts/post";
 import { AddDept } from "../components/users/addUsers";
 import * as handleIssues from "../redux/Issues/actions";
@@ -40,7 +40,7 @@ const useclass = makeStyles({
   },
 });
 // mock auth
-const { uuid, userdept } = { uuid: 20, userdept: 5 };
+let uuid, userdept;
 function Issues() {
   const dispatch = useDispatch();
   const classes = useclass();
@@ -83,7 +83,12 @@ function Issues() {
     dispatch(handleIssues.deleteIssues(id));
   };
   React.useEffect(() => {
-    fetchIssues();
+    //auth
+    const { uuid: id, userdept: dept } = useAuth();
+    (uuid = id), (userdept = dept);
+    // fetch issues aftr half a second, reason being i want some  spinner and depts below
+    setTimeout(fetchIssues, 500);
+
     if (!departments.length) {
       FetchDepts("/departments/fetchdepts/true", dispatch);
     }
@@ -103,19 +108,20 @@ function Issues() {
     dispatch(handleIssues.fetAll());
     dispatch(handleDepts.resetSelected());
   };
+
   return (
     <Layout>
       <Grid
         alignItems="flex-start"
         container
         justify="space-evenly"
-        spacing={4}
+        spacing={2}
         direction="row"
       >
-        <Grid cols={5} item component="div" xs>
+        <Grid lg={4} md={4} xs={12} item component="div" xs>
           <AddIssues sendValue={getValues} userdept={dept} />
         </Grid>
-        <Grid item xs>
+        <Grid item lg={4} md={4} xs={12}>
           {/* eslint-disable no-nested-ternary */}
           {departments.length ? (
             <ShowDepts depts={departments} getDept={handleDept} />
@@ -133,7 +139,7 @@ function Issues() {
           )}
         </Grid>
 
-        <Grid item xs>
+        <Grid item lg={4} md={4} xs={12}>
           <Box className="block my-2">
             {/* eslint-disable no-nested-ternary */}
             {listIssues.length ? (
@@ -142,7 +148,8 @@ function Issues() {
                   variant="body2"
                   className="alert alert-primary text-center p-2 my-2"
                 >
-                  {dept?.department || ""}
+                  {dept?.department || ""} {"  "}
+                  {listIssues?.length || 0}
                 </Typography>
                 <IssueList issues={listIssues} deleteId={deleteValue} />
               </div>
@@ -154,11 +161,11 @@ function Issues() {
               <div className="mx-auto my-4 p-4 text-center">
                 <Alert severity="error">
                   {" "}
-                  <p>No issues found for {dept?.department || ""}.</p>
+                  <p>No issues found for {dept?.department || "department"}.</p>
                 </Alert>{" "}
               </div>
             )}
-            {departments.length ? (
+            {listIssues?.length < 9 ? (
               <Button
                 variant="outlined"
                 color="secondary"
@@ -207,11 +214,11 @@ const AddIssues = ({
         .then((res) => {
           console.log(res);
           sendSelected("");
-          if (res.status === 200) {
-            setSuccess(res.msg);
+          if (res.data === 1) {
+            setSuccess(`${issue} addded succesfully`);
             setIssue("");
           } else {
-            throw new Error(res.msg);
+            throw new Error("Error adding issue.Refresh and try again");
           }
         })
         .catch((error) => {
@@ -221,6 +228,7 @@ const AddIssues = ({
           setTimeout(() => {
             form.current.reset();
             setSuccess("");
+            setError("");
             btn.current.disabled = false;
           }, 3000);
         });

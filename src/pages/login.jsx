@@ -2,6 +2,7 @@ import React from "react";
 import axios from "axios";
 import Router from "next/router";
 import Head from "next/head";
+import ErrorIcon from "@material-ui/icons/Error";
 // import { useSession, signin, signout } from "next-auth/client";
 import {
   Grid,
@@ -19,7 +20,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
-import { useAuth } from "../lib/api/users";
+import { useAuth } from "../components/Layout";
 
 const useStyles = makeStyles({
   card: {
@@ -54,14 +55,14 @@ function Login() {
   const [perr, setPerr] = React.useState("");
   const [errmsg, setError] = React.useState("");
   const classes = useStyles();
-  //const [session, loading] = useSession();
+  // const [session, loading] = useSession();
 
   React.useEffect(() => {
     // check if user is logged in,if so,  send them to home page
     const timer = setTimeout(() => {
       const data = useAuth();
 
-      if (data) Router.push("/");
+      if ("uuid" in data) Router.push("/");
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -118,16 +119,16 @@ function Login() {
             // global this is an addition to ES2020
             globalThis &&
               localStorage.setItem("commsApp", JSON.stringify(data));
-            // Router.push("/");
+
+            Router.push("/");
           } else {
-            throw new Error(data.statusText);
+            throw new Error(data.msg);
           }
         })
         .catch((error) => {
-          localStorage.setItem("commsApp", JSON.stringify({ uuid: 20 }));
-          Router.push("/");
-          // any login error are show here
-          setError("");
+          setError(error.message);
+        })
+        .finally(() => {
           setSpinner(false);
           setTimeout(() => setError(""), 5000);
         });
@@ -185,16 +186,20 @@ function Login() {
               type="submit"
               disabled={spinner}
             >
-              Log in
+              {spinner ? "Logging in " : "Log in"}
             </Button>
           </CardActions>
           {spinner ? <LinearProgress /> : null}
-          <Snackbar
-            open={!!errmsg.length}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            <Alert severity="error">{errmsg}</Alert>
-          </Snackbar>
+          {errmsg && (
+            <Alert
+              action={<ErrorIcon />}
+              severity="error"
+              variant="filled"
+              className="p-2 m-2"
+            >
+              {errmsg}
+            </Alert>
+          )}
         </form>
       </Card>
       {/* eslint-disable react/jsx-one-expression-per-line */}

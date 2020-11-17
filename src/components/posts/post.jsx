@@ -11,6 +11,7 @@ import {
   Typography,
   Input,
 } from "@material-ui/core";
+import CheckedIcon from "@material-ui/icons/CheckOutlined";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes, { array } from "prop-types";
 import Pagination from "@material-ui/lab/Pagination";
@@ -23,6 +24,15 @@ const useStyles = makeStyles({
 
 //mock auth
 const { uuid, userdept } = { uuid: 20, userdept: 5 };
+
+const DisplayIssue = ({ id, selected, issue, dept }) => (
+  <MenuItem value={id} className={selected ? "bg-red-500" : "bg-white"}>
+    {" "}
+    {/** Remove alt id suring prod */}
+    {issue}
+    {"  "}({dept})
+  </MenuItem>
+);
 
 function DisplayIssues({
   issues = [],
@@ -38,7 +48,6 @@ function DisplayIssues({
       if (!e.target.value.includes("")) {
         getIssue(e.target.value);
         setErrorInt(false);
-      } else {
       }
     } else {
       if (e.target.value) {
@@ -61,19 +70,22 @@ function DisplayIssues({
         onChange={handleChange}
       >
         <MenuItem value="">
-          <em>Select Issue</em>
+          <em>Select Issue,</em>
         </MenuItem>
         {issues.map((item) => (
-          <MenuItem key={item.altId} value={item.id}>
-            {" "}
+          <MenuItem value={item.id} key={item.id}>
+            {item.selected ? <CheckedIcon htmlColor="green" /> : null}{" "}
             {/** Remove alt id suring prod */}
             {item.issue}
+            {"  "}
+            {multiple ? `(${item.dept})` : null}
           </MenuItem>
         ))}
       </Select>
     </FormControl>
   );
 }
+
 export default DisplayIssues;
 
 export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
@@ -91,19 +103,7 @@ export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
       </Typography>
       <List>
         {depts.slice(start, end).map((dept, i) => (
-          <ListItem
-            key={dept.id}
-            dense
-            alignItems="center"
-            selected
-            className={dept.selected ? "bg-danger text-white" : "bg-light"}
-            divider
-            button
-            onClick={() => getDept(dept)}
-          >
-            <small className="mr-2">{start + i + 1}. </small>{" "}
-            <ListItemText primary={dept.department} />
-          </ListItem>
+          <ShowDept dept={dept} getDept={getDept} start={start + i + 1} />
         ))}
       </List>
       {depts.length > 10 ? (
@@ -118,6 +118,21 @@ export const ShowDepts = ({ depts = [], getDept = (f) => f }) => {
     </>
   );
 };
+const ShowDept = ({ dept = {}, getDept = (f) => f, start = 0 }) => (
+  <ListItem
+    key={dept.id}
+    dense
+    alignItems="center"
+    selected
+    className={dept.selected ? "bg-danger text-white" : "bg-light"}
+    divider
+    button
+    onClick={() => getDept(dept)}
+  >
+    <small className="mr-2">{start}. </small>{" "}
+    <ListItemText primary={dept.department} />
+  </ListItem>
+);
 
 export const ShowUsers = ({ users = [], getUser = (f) => f }) => {
   return (

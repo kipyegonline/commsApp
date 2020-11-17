@@ -12,10 +12,12 @@ import {
   Typography,
 } from "@material-ui/core";
 import Notifications from "@material-ui/icons/NotificationImportant";
+import ErrorIcon from "@material-ui/icons/Cancel";
+import LinkIcon from "@material-ui/icons/ArrowBack";
 import Skeleton from "@material-ui/lab/Skeleton";
 import * as postactions from "../../redux/posts/actions";
 import Comments from "../../components/posts/comments";
-import Layout from "../../components/Layout";
+import Layout, { useAuth } from "../../components/Layout";
 import PostDetails from "../../components/posts/PostDetails";
 import RecentPosts from "../../components/posts/RecentPosts";
 import RelatedIssues from "../../components/posts/RelatedIssues";
@@ -32,8 +34,8 @@ const useStyles = makeStyles({
     marginTop: 10,
   },
 });
-// mock auth
-const { uuid, userdept } = { uuid: 20, userdept: 5 };
+// auth
+let uuid, userdept;
 
 const Post = () => {
   const [reloading, setReloading] = React.useState(false);
@@ -83,7 +85,7 @@ const Post = () => {
   };
   // fetch issues
 
-  const fetchRelatedIssues = (uuid) => {
+  const fetchRelatedIssues = (issue, uuid) => {
     axios
       .get(`/posts/fetchRelatedIssues/${uuid}/${issue}`)
       .then((res) => {
@@ -141,15 +143,15 @@ const Post = () => {
     setReloading(true);
 
     const postAltid = JSON.parse(localStorage.getItem("postAltid"));
-    Promise.all([
-      fetchPost(uuid, postAltid),
-      fetchComments(postAltid),
-    ]).finally(() => setReloading(false));
+    Promise.all([fetchPost(uuid, postAltid), fetchComments(uuid, postAltid)]);
+    setTimeout(() => {
+      setReloading(false);
+    }, 5000);
 
     // pole pole
     setTimeout(() => {
-      fetchRelatedIssues(uuid);
-      fetchRecentPosts(uuid, issue, true);
+      fetchRelatedIssues(postAltid, uuid);
+      fetchRecentPosts(uuid, postAltid, true);
     }, 3000);
   };
   // when a recent post is clicked
@@ -163,7 +165,7 @@ const Post = () => {
         ? { ...item, selected: true }
         : { ...item, slected: false }
     );
-    console.log(issue, id, "recentponts");
+
     setRelated(issues);
     fetchPostsForRecent(uuid, id);
   };
@@ -181,6 +183,8 @@ const Post = () => {
   };
 
   React.useEffect(() => {
+    const { uuid: id, userdept: dept } = useAuth();
+    (uuid = id), (userdept = dept);
     // if the post id is already on router params
     if (issue) {
       // Get clicked post since its already on redux store
@@ -194,7 +198,7 @@ const Post = () => {
       if (!recent.length || !related.length) {
         setTimeout(() => {
           Promise.all([
-            fetchRelatedIssues(uuid),
+            fetchRelatedIssues(issue, uuid),
             fetchRecentPosts(uuid, issue, true),
           ]);
         }, 3000);
@@ -214,10 +218,12 @@ const Post = () => {
 
   return (
     <Layout title={post.clientName || "Post"}>
+      {/* first ternary */}
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
-          <Grid item xs={false} md={3}>
+          <Grid item xs={12} md={3}>
             {/* eslint-disable no-nested-ternary */}
+
             {relatedspin ? (
               <div className="text-center mx-auto my-3 p-4">
                 <CircularProgress size="1rem" color="primary" />
@@ -232,7 +238,12 @@ const Post = () => {
                 />
               </div>
             ) : (
-              <Typography>No details found</Typography>
+              <div className="p-4 my-2">
+                <Typography>
+                  {" "}
+                  <ErrorIcon color="secondary" /> No details found
+                </Typography>
+              </div>
             )}
           </Grid>
           <Grid item className={classes.mainGrid} xs={12} md={6}>
@@ -250,8 +261,8 @@ const Post = () => {
               </div>
             ) : (
               <Box className="m-4 text-center">
-                <CircularProgress color="primary" size="3rem" />
-                <p>Reloading post</p>
+                <CircularProgress color="primary" size="1.5rem" />
+                <p> Reloading post</p>
               </Box>
             )}
           </Grid>
@@ -259,7 +270,7 @@ const Post = () => {
             {recentspin ? (
               <div className="text-center mx-auto my-3 p-4">
                 <CircularProgress size="3rem" color="primary" />
-                <Typography>Fetching recent posts</Typography>
+                <Typography> Fetching recent posts</Typography>
               </div>
             ) : recent.length ? (
               <div>
@@ -267,7 +278,15 @@ const Post = () => {
                 <RecentPosts recent={recent} sendRecent={getRecent} />{" "}
               </div>
             ) : (
-              <Typography>You have no recent posts</Typography>
+              <div className="text-center mx-auto my-3 p-4">
+                <Typography>You have no recent posts</Typography>
+                <Typography className="pt-4">
+                  <LinkIcon className="ml-2" />
+                  <Link href="/posts">
+                    <a> Back to posts</a>
+                  </Link>
+                </Typography>
+              </div>
             )}
           </Grid>
         </Grid>

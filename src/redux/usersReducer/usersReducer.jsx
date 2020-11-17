@@ -2,11 +2,13 @@ import { C } from "./types";
 
 const initState = {
   users: [],
+  user: {},
   selectedUsers: [],
   userdepts: [],
   userStats: [],
   sectionUsers: [],
   department: "",
+  errors: "",
 };
 function usersReducer(state = initState, action) {
   switch (action.type) {
@@ -17,6 +19,16 @@ function usersReducer(state = initState, action) {
         sectionUsers: action.payload,
         department: "",
       };
+    case C.ADD_USER:
+      const userExists = state.users.find(
+        (user) => user.userAltId === action.payload
+      );
+      return userExists
+        ? {
+            ...state,
+            user: userExists,
+          }
+        : state;
     case C.DELETE_USER:
       return {
         ...state,
@@ -27,14 +39,14 @@ function usersReducer(state = initState, action) {
       };
     case C.SECTION_USERS:
       const checkdept = state.users.find(
-        (user) => user.userdept == action.payload
+        (user) => user.userdept === action.payload
       );
       return {
         ...state,
         sectionUsers: state.users.filter(
           (user) => +user.userdept === action.payload
         ),
-        department: checkdept ? checkdept.dept : "",
+        department: checkdept ? checkdept.userdept : "",
         userStats: state.userStats.map((stat) =>
           stat.id === action.payload
             ? { ...stat, clicked: true }
@@ -50,11 +62,14 @@ function usersReducer(state = initState, action) {
     case C.EDIT_USER:
       const id = state.users.find((user) => user.id === action.payload.id);
       if (id) {
+        const newState = state.users.map((user) =>
+          user.id === action.payload.id ? { ...action.payload } : { ...user }
+        );
         return {
           ...state,
-          users: state.users.map((user) =>
-            user.id === action.payload.id ? { ...action.payload } : { ...user }
-          ),
+          users: newState,
+          user: action.payload,
+          sectionUsers: newState,
         };
       }
 
@@ -104,6 +119,12 @@ function usersReducer(state = initState, action) {
         ...state,
         userStats: action.payload,
       };
+    case C.ADD_ERRORS:
+      return {
+        ...state,
+        errors: action.payload,
+      };
+
     default:
       return state;
   }

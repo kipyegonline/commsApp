@@ -8,7 +8,7 @@ import { Grid, Divider, CircularProgress, TextField } from "@material-ui/core";
 import * as postactions from "../redux/posts/actions";
 import * as useractions from "../redux/usersReducer/actions";
 import * as issueactions from "../redux/Issues/actions";
-import Layout from "../components/Layout";
+import Layout, { useAuth } from "../components/Layout";
 import PostsTable, { ToolBar } from "../components/posts/postTable";
 import Pagination from "@material-ui/lab/Pagination";
 //import { getLocal, handleLocalStorage } from "../components/helpers";
@@ -22,7 +22,7 @@ function Posts() {
   const dispatch = useDispatch();
   let fetchTimer;
   // mock auth
-  const { uuid, userdept } = { uuid: 20, userdept: 5 };
+  let uuid, userdept;
   // pull data from redux store
   const { posts, issues, users } = useSelector((state: any) => ({
     posts: state.posts.posts,
@@ -84,8 +84,8 @@ function Posts() {
         const { data } = res;
         dispatch(useractions.addUserdept(data));
       })
-      .catch((error) => console.error("fetch posts:", error))
-      .finally(() => console.log("finally"));
+      .catch((error) => console.error("fetch posts:", error));
+    //.finally(() => console.log("finally"));
   };
 
   // fetch issues belonging to currently logged in user
@@ -100,8 +100,10 @@ function Posts() {
   };
   /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
+    // fetch info for logged in user
+    const { uuid: id, userdept: dept } = useAuth();
+    (uuid = id), (userdept = dept);
     // return if the data is already there
-
     if (!posts.length || !issues.length || !users.length)
       Promise.all([
         fetchPosts(uuid),
@@ -110,8 +112,8 @@ function Posts() {
       ]);
 
     /* 
-    //remove on prod
-    dispatch(postactions.addPosts(JSON.parse(localStorage.getItem("posts"))));*/
+    //remove on prod*/
+    // dispatch(postactions.addPosts(JSON.parse(localStorage.getItem("posts"))));
   }, []);
 
   /* Events */

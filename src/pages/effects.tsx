@@ -1,13 +1,31 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Checkbox from "@material-ui/core/Checkbox";
 import { Button } from "@material-ui/core";
+
+interface Task {
+  id: number;
+  task: string;
+  done: boolean;
+}
 function Checkboxx() {
   const [checked, toggle] = React.useReducer((checked) => !checked, false);
   const [elVal, setElval] = React.useReducer(
     (elVal) => (elVal >= 20 ? 0 : elVal + 1),
     0
   );
-
+  const [tasks, setTasks] = React.useState<Task[]>([]);
+  const getValue = (val) => {
+    setTasks([...tasks, { id: Date.now(), task: val, done: false }]);
+  };
+  const handleChange = (target, id) => {
+    const newState = tasks.map((task) =>
+      task.id === id ? { ...task, done: !task.done } : task
+    );
+    setTasks(newState);
+  };
+  const handleDelete = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
   return (
     <div className="p-4 m-4">
       <Checkbox value={checked} onChange={toggle} />
@@ -16,6 +34,18 @@ function Checkboxx() {
       <Button variant="outlined" onClick={setElval}>
         Start{" "}
       </Button>
+      <div>
+        <div>
+          <FormArea sendValue={getValue} />
+        </div>
+        <div>
+          <ListArea
+            tasks={tasks}
+            handleChange={handleChange}
+            handleClick={handleDelete}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -51,6 +81,80 @@ class MyMap<K> {
 }
 const petras: MyMap<number> = new MyMap<number>(13, 13);
 
+const FormArea: React.FC<{ sendValue: (value: string) => void }> = ({
+  sendValue,
+}) => {
+  const [value, setValue] = React.useState("");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!value.trim()) return;
+    sendValue(value);
+    setValue("");
+  };
+  return (
+    <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+      <label>Task</label>
+      <input
+        style={{
+          display: "block",
+          padding: 10,
+          border: "1px solid #ccc",
+          width: "100%",
+        }}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <input
+        style={{
+          display: "block",
+          background: "skyblue",
+          padding: 10,
+          margin: "10px 0",
+          border: "1px solid #ccc",
+          width: "100%",
+        }}
+        type="submit"
+        value="+Add"
+      />
+    </form>
+  );
+};
+const ListArea: React.FC<{
+  tasks: Task[];
+  handleClick(id: number): void;
+  handleChange(e: string, id: number): void;
+}> = ({ tasks = [], handleClick = (f) => f, handleChange = (f) => f }) => {
+  return (
+    <ul style={{ listStyle: "none", padding: 10, maxWidth: 400 }}>
+      {tasks.map((task, i) => (
+        <li
+          className={task.done ? "line-through " : ""}
+          style={{ listStyle: "none", padding: 16, background: "#ccc" }}
+          key={task.id}
+        >
+          {" "}
+          {i + 1}.{"   "}
+          {task.task}
+          <span
+            style={{ float: "right", color: "red", fontWeight: 400 }}
+            onClick={() => handleClick(task.id)}
+          >
+            X
+          </span>
+          <input
+            type="checkbox"
+            className="ml-8"
+            checked={task.done}
+            onChange={(e) =>
+              handleChange((e.target as HTMLInputElement).value, task.id)
+            }
+          />
+        </li>
+      ))}
+    </ul>
+  );
+};
 /**
  * Bootom 
  * import React from 'react';

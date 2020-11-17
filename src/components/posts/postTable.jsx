@@ -65,9 +65,6 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
               <TableCell scope="row" className="thead bg-light">
                 Issue
               </TableCell>
-              <TableCell scope="row" className="thead bg-light">
-                Subject
-              </TableCell>
 
               <TableCell scope="row" className="thead bg-light">
                 Handler
@@ -159,7 +156,7 @@ const TableBodyInfo = ({
     if (uuid === +handler_id && seen === 0) {
       setTicks(id);
     }
-    const subjectAs = subject.split(" ").join("-");
+
     // Route to another page
     Router.push(`/post/${altId}`, undefined, {
       shallow: false,
@@ -169,16 +166,20 @@ const TableBodyInfo = ({
     <TableRow>
       <TableCell>
         {index + 1}
-        <Done color={Boolean(Number(seen)) ? "secondary" : "inherit"} />{" "}
+        <Done htmlColor={Boolean(Number(seen)) ? "lightblue" : ""} />{" "}
       </TableCell>
-      <TableCell>{clientName}</TableCell>
+      <TableCell onClick={() => handlePostClick(id, altId, subject, issue)}>
+        <Link href={`/post/${altId}`}>
+          <a>{clientName}</a>
+        </Link>
+      </TableCell>
       <TableCell>
         {clientPhone} <br />
         <small>{clientEmail}</small>
       </TableCell>
       <TableCell>{clientOrg}</TableCell>
       <TableCell>{issue}</TableCell>
-      <TableCell>{subject}</TableCell>
+
       <TableCell>
         <b>{+handler_id === uuid ? "You" : handler} </b>
       </TableCell>
