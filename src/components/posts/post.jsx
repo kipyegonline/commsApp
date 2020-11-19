@@ -63,7 +63,7 @@ function DisplayIssues({
       <Select
         labelId="issues-at-hand"
         id="issues-at-hand"
-        value={issue}
+        value={multiple ? issue.join(", ") : issue}
         variant="filled"
         error={errorInt}
         multiple={multiple}

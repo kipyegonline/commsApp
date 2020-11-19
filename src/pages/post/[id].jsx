@@ -35,14 +35,13 @@ const useStyles = makeStyles({
   },
 });
 // auth
-let uuid, userdept;
 
 const Post = () => {
   const [reloading, setReloading] = React.useState(false);
   const [related, setRelated] = React.useState([]);
   const [relatedspin, setRelatedSpin] = React.useState(true);
   const [recentspin, setRecentpin] = React.useState(true);
-
+  let uuid, userdept;
   const classes = useStyles();
   const dispatch = useDispatch();
   // get the clicked item from router props
@@ -210,7 +209,7 @@ const Post = () => {
 
     // listen to load event, reload that is
     window.addEventListener("load", handleReload);
-  }, []);
+  }, [issue]);
   // handle added comments  sent up from addcomments component
   const getValue = (data) => {
     dispatch(postactions.addComment(data));

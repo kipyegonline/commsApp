@@ -98,12 +98,13 @@ const Footer = () => (
 export const useAuth = () => {
   if (globalThis.Window) {
     const auth = JSON.parse(localStorage.getItem("commsApp"));
+    if (auth) {
+      let uuidArr = auth?.uuid.split("-");
 
-    let uuidArr = auth?.uuid.split("-");
+      const uuid = Number(uuidArr[uuidArr.length - 1]);
 
-    const uuid = uuidArr[uuidArr.length - 1];
-
-    return { ...auth, uuid };
+      return { ...auth, uuid };
+    }
   }
 };
 

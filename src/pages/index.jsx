@@ -18,6 +18,7 @@ const Home = () => {
       .catch((error) => console.error("fetch posts:", error));
   };
   React.useEffect(() => {
+    if (!useAuth()) return;
     const { uuid, userdept } = useAuth();
     if (uuid) {
       fetchLaravel(uuid);
@@ -80,8 +81,8 @@ const skills = [
 ];
 
 console.log(
-  "%cHello there, \n why are you here? \n Anyway, my name is Vincent Kipyegon, a front end react  web developer with over 3 years of experience. I enjoy building interfaces with javascript,backend stuff with php and Mysql and data analysis with python. \n \
-    Get in touch %cvincekipyegon11@gmail.com",
+  "%cHello there, \n why are you here? \n Anyway,since you're here, my name is Vincent Kipyegon, a front end react  web developer with over 3 years of experience in front end web development. I enjoy building interfaces with javascript,backend stuff with php and Mysql and data analysis with python. \n \
+    Get in touch %cvince.kipyegon11@gmail.com",
   "font-family:cursive;font-size:1rem;",
   "font-weight:bold; font-family:cursive;font-size:1rem;"
 );

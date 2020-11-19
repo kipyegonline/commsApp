@@ -19,10 +19,14 @@ function Posts() {
   const [issue, setIssue] = React.useState("");
   const [user, setUser] = React.useState("");
   const [current, setCurrent] = React.useState(0);
+  const [userId, setUserId] = React.useState<{
+    uuid?: number;
+    userdept?: number;
+  }>({});
   const dispatch = useDispatch();
   let fetchTimer;
   // mock auth
-  let uuid, userdept;
+  let { uuid, userdept } = userId;
   // pull data from redux store
   const { posts, issues, users } = useSelector((state: any) => ({
     posts: state.posts.posts,
@@ -32,7 +36,7 @@ function Posts() {
 
   // fetch  posts for currently logged in user
 
-  const fetchPosts = (id: number) => {
+  const fetchPosts = (id: number | undefined) => {
     setLoading(true);
     axios
       .get(`/posts/${id}`)
@@ -76,7 +80,7 @@ function Posts() {
   };
 
   // fetch dept users affiliated with logged in user
-  const fetchDeptUsers = (dept: string | number) => {
+  const fetchDeptUsers = (dept: string | number | undefined) => {
     axios
       .get(`/posts/deptusers/${dept}/${uuid}`)
       .then((res) => {
@@ -89,7 +93,7 @@ function Posts() {
   };
 
   // fetch issues belonging to currently logged in user
-  const fetchdeptIssues = (dept: number) => {
+  const fetchdeptIssues = (dept: number | undefined) => {
     axios
       .get(`/posts/issues/${dept}/${uuid}`)
       .then((res) => {
@@ -101,8 +105,8 @@ function Posts() {
   /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
     // fetch info for logged in user
-    const { uuid: id, userdept: dept } = useAuth();
-    (uuid = id), (userdept = dept);
+    setUserId(useAuth());
+    const { uuid, userdept } = useAuth();
     // return if the data is already there
     if (!posts.length || !issues.length || !users.length)
       Promise.all([

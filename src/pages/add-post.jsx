@@ -54,8 +54,7 @@ const useInput = (initialValue) => {
     () => setValue(initialValue),
   ];
 };
-//  auth
-let uuid, userdept;
+
 // context
 const CustomerContext = React.createContext();
 export const useCustomerContext = () => React.useContext(CustomerContext);
@@ -66,16 +65,19 @@ function AddPost() {
   const [clientEmail, setClientEmail] = React.useState("");
   const [clientOrg, setClientOrg] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [issue, setIssue] = React.useState([]);
-  const [handler, setHandler] = React.useState([]);
+  const [issue, setIssue] = React.useState([]); // issues clicked
+  const [handler, setHandler] = React.useState([]); // tracks handlers
   const [subject, setSubject] = React.useState("");
-  const [clientDept, setClientDept] = React.useState([]);
+  const [clientDept, setClientDept] = React.useState([]); // tracks departments
   const [errormsg, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
+  const [userId, setUserId] = React.useState({});
+
+  const { uuid, userdept } = userId;
   const form = React.useRef(null);
   const btn = React.useRef(null);
 
-  // hit redux store
+  // hit redux store,like a boss
 
   const { issues, selectedUsers: users, departments, depterr } = useSelector(
     (state) => ({
@@ -91,10 +93,10 @@ function AddPost() {
   const today = new Date();
   // Run side effects
   React.useEffect(() => {
-    const { uuid: id, userdept: dept } = useAuth();
-    (uuid = id), (userdept = dept);
+    setUserId(useAuth());
 
-    console.log("Effect, client Dept");
+    console.log("Effect", clientDept);
+
     if (!departments.length || !issues.length) {
       FetchDepts("/departments/fetchdepts/true", dispatch);
     }
@@ -115,7 +117,10 @@ function AddPost() {
           // add object property selected of false
           throw new Error("There is no user from the selected department");
         }
-        return res.data.map((user) => ({ ...user, selected: false }));
+        return res.data.map((user) => ({
+          ...user,
+          selected: false,
+        }));
       })
       // send to redux
       .then((data) => dispatch(useractions.addselectedUsers(data)))
@@ -142,13 +147,13 @@ function AddPost() {
       .catch((error) => setError(error.message))
       .finally(() => setTimeout(setError(""), 3000));
   };
-  // handle  user actions
+  /* This function tracks the users selected or unselected as well as when 2 users from same department are clicked */
   const handleUser = (user) => {
     // check if users already clicked
 
-    if (handler.find((item) => item.id === user.id)) {
-      // if so,remove from list and redux
-      const index = handler.findIndex((item) => item.id === user.id);
+    const index = handler.findIndex((item) => item.id === user.id);
+    // if so,remove from list and tell redux
+    if (index >= 0) {
       handler.splice(index, 1);
       // send to redux store
       dispatch(useractions.editSelected(user.id));
@@ -169,14 +174,18 @@ function AddPost() {
     }
   };
 
+  /* This function (event handler) checks whether a department has been clicked; removes or adds */
   const handleDept = (data) => {
-    if (clientDept.includes(data.id)) {
-      clientDept.splice(clientDept.indexOf(data.id), 1);
+    // find if incoming dept is already in array or not
+    const deptIndex = clientDept.findIndex((dept) => dept.id === data.id);
+    if (deptIndex >= 0) {
+      // removes if it exists
+      clientDept.splice(deptIndex, 1);
     } else {
-      const { id } = data;
-      setClientDept([...clientDept, id]);
+      // adds to tracking array, client dept
+      setClientDept([...clientDept, data]);
     }
-    // send to redux store
+    // send to redux store,notify redux to select or unselect
     const { selected } = data;
     dispatch(userdepts.editSelected(data.id));
 
@@ -192,17 +201,19 @@ function AddPost() {
     }
   };
 
+  /* This  function (event handler)  tracks the issues being clicked; removed or added */
   const handleIssue = (incomingIssue) => {
-    // check if an issue being added or removed
+    // incoming issue is the array from select element
+    // check if an issue is being added or removed
     if (incomingIssue.length > issue.length) {
       // select added issue
       const theItem = incomingIssue[incomingIssue.length - 1];
-      // confirm it exists on state
+      // confirm if the issue  exists already on state
       const theIssue = issues.find((item) => item.id === theItem);
 
       if (theIssue) {
-        // if it exists,check if there is similar issue selected as one can only select one issue per dept
-        let exists = issues.some(
+        // if it exists,check if there is similar issue selected as one can only select one issue per dept per user
+        const exists = issues.some(
           (item) => item.userdept === theIssue.userdept && item.selected
         );
         if (!exists) {
@@ -210,14 +221,17 @@ function AddPost() {
           // set state
           setIssue(incomingIssue);
         } else {
+          // tell the user to select one issue per department
+          /* eslint-disable no-alert */
           alert(
             "Cannot select 2 issues from same department, split the post into 2"
           );
         }
       }
     } else {
-      // here its a bit tricky.. check which item was removed by comparing array state and  incoming
+      // here its a bit tricky.. check which item was removed by comparing array state and  incoming issue from select element
       issue.forEach((item) => {
+        // check if item doesn't exist on issue array
         if (incomingIssue.indexOf(item) < 0) {
           // remove item from redux
           dispatch(issueactions.removeSelected(item.id));
@@ -227,18 +241,22 @@ function AddPost() {
       setIssue(incomingIssue);
     }
   };
-
-  let holder = [];
-
+  /* This utility function tracks issues associated with departments, magic, should even gp outside the component */
   const appendHandlerToIssue = (handler, issues) => {
+    let holder = [],
+      missingParts = [];
+
     handler.forEach((item) => {
       const res = issues.find((d) => d.userdept === item.userdept);
       if (res) {
-        let token = item.id + "-" + res.id;
+        const token = `${item.id}-${res.id}`;
 
         holder = [...holder, { ...item, id: token }];
+      } else {
+        missingParts = [...missingParts, item];
       }
     });
+    return [holder, missingParts];
   };
 
   const handleSubmit = (e) => {
@@ -246,6 +264,8 @@ function AddPost() {
     if (clientName.value.trim().length < 6) {
       setError("Kindly add a client or company name");
     } else if (issue.length < 1) {
+      console.log("issues issues", appendHandlerToIssue(handler, issues)[1]);
+
       setError("Kindly select the nature of issue");
     } else if (subject.trim().length < 6) {
       setError("Kindly add the subject of the issue");
@@ -267,7 +287,8 @@ function AddPost() {
       setError("");
       btn.current.disabled = true;
 
-      appendHandlerToIssue(handler, issues);
+      const handlers = appendHandlerToIssue(handler, issues)[0];
+      const depts = appendHandlerToIssue(clientDept, issues)[0];
 
       const data = {
         clientName: clientName.value,
@@ -275,15 +296,15 @@ function AddPost() {
         clientEmail,
         clientOrg,
         message,
-        handler: holder.map((user) => user.id).join("*"),
+        handler: handlers.map((user) => user.id).join("*"),
         subject,
-        clientDept: clientDept.join("*"),
+        clientDept: depts.map((user) => user.id).join("*"),
         addedBy: uuid,
         status: 0,
         altId: v4(),
         addedon: new Date().toLocaleString(),
       };
-      console.log("dara", holder, data);
+      console.log("dara", depts, handlers, issue, data, clientDept);
       // Remove on prod
       // handleLocalStorage(data, "posts");
 
@@ -309,7 +330,7 @@ function AddPost() {
               setHandler([]);
               setSubject("");
               setClientDept([]);
-              holder = [];
+
               form.current.reset();
             }, 2000);
           } else {
@@ -323,6 +344,15 @@ function AddPost() {
           btn.current.disabled = false;
         });
     } else {
+      console.log(
+        "Harrsi",
+        clientName.value,
+        issue,
+        subject,
+        message,
+        clientDept,
+        handler
+      );
       setError(
         "Kindly ensure name,type of issue,subject,message,department and officer in-charge fields are not empty"
       );

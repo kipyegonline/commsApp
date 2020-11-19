@@ -21,20 +21,22 @@ import Edit from "@material-ui/icons/Edit";
 import { v4 } from "uuid";
 
 import * as postactions from "../../redux/posts/actions";
-
-// mock auth
-const { uuid, userdept, username } = {
-  uuid: 20,
-  userdept: 5,
-  username: "Vince",
-};
+import { useAuth } from "../Layout";
 
 export default function Comments({ comments, sendValue, post_id, handler_id }) {
   const [text, setText] = React.useState("");
+  const [userId, setUserId] = React.useState({});
+
+  const { uuid, userdept, username } = userId;
+  React.useEffect(() => {
+    setUserId(useAuth());
+  }, []);
+
   const dispatch = useDispatch();
 
   const btn = React.useRef(null);
   const form = React.useRef(null);
+
   const getEdited = (data) => {
     dispatch(postactions.addEdited(data));
     axios
@@ -144,6 +146,13 @@ const CommentsList = ({
     clicked: false,
     id: undefined,
   });
+  const [userId, setUserId] = React.useState({});
+
+  const { uuid, userdept, username } = userId;
+
+  React.useEffect(() => {
+    setUserId(useAuth());
+  }, []);
   const handleCommentEdit = (e) => {
     if (e.target) {
       setEditing({

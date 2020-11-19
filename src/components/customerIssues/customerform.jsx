@@ -77,7 +77,12 @@ function CustomerForm() {
       </FormControl>
       {/* issues list */}
       {issues.length > 0 ? (
-        <DisplayIssues getIssue={handleIssue} issue={issue} issues={issues} />
+        <DisplayIssues
+          getIssue={handleIssue}
+          issue={issue}
+          issues={issues}
+          multiple
+        />
       ) : null}
       {/** item 4 */}
 
@@ -112,7 +117,7 @@ function CustomerForm() {
       <Button
         color="primary"
         size="large"
-        variant="filled"
+        variant="contained"
         type="submit"
         ref={btn}
         startIcon={<AddCircleOutlineRounded />}

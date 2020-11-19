@@ -2,6 +2,7 @@ import React from "react";
 import axios from "axios";
 import Router from "next/router";
 import Head from "next/head";
+import Link from "next/link";
 import ErrorIcon from "@material-ui/icons/Error";
 // import { useSession, signin, signout } from "next-auth/client";
 import {
@@ -60,6 +61,7 @@ function Login() {
   React.useEffect(() => {
     // check if user is logged in,if so,  send them to home page
     const timer = setTimeout(() => {
+      if (!useAuth()) return;
       const data = useAuth();
 
       if ("uuid" in data) Router.push("/");
@@ -200,6 +202,11 @@ function Login() {
               {errmsg}
             </Alert>
           )}
+          <Typography align="center">
+            <Link href="/reset-password">
+              <a>Forgot password </a>
+            </Link>
+          </Typography>
         </form>
       </Card>
       {/* eslint-disable react/jsx-one-expression-per-line */}
