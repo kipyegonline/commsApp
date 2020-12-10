@@ -4,7 +4,7 @@ import Router, { useRouter } from "next/router";
 import NProgress from "nprogress";
 import PropTypes from "prop-types";
 import CloseIcon from "@material-ui/icons/Close";
-import { makeStyles } from "@material-ui/core";
+import { Badge, makeStyles } from "@material-ui/core";
 import {
   Fab,
   IconButton,
@@ -91,7 +91,7 @@ const NavBar = () => {
   const handleLogout = () => {
     removeAuth();
 
-    //location.reload();
+    location.reload();
     Router.push("/login");
   };
 
@@ -138,7 +138,16 @@ const NavBar = () => {
               <IconButton>
                 <PostsIcons />
               </IconButton>
-              Posts
+              Posts{" "}
+              <Badge
+                badgeContent={user?.notifications || 0}
+                color="secondary"
+                max={99}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                showZero={false}
+              >
+                {"  "}
+              </Badge>
             </a>
           </Link>
         </Typography>
@@ -158,6 +167,20 @@ const NavBar = () => {
         </Typography>
         <Typography
           variant="body2"
+          className={pathname === "/department" ? classes.active : ""}
+        >
+          <Link href="/department">
+            <a>
+              {" "}
+              <IconButton>
+                <Departments />
+              </IconButton>
+              {user?.deptAlt || "Department"}
+            </a>
+          </Link>
+        </Typography>
+        <Typography
+          variant="body2"
           className={pathname === "/add-departments" ? classes.active : ""}
         >
           <Link href="/add-departments">
@@ -165,7 +188,7 @@ const NavBar = () => {
               <IconButton>
                 <Departments />
               </IconButton>
-              Departments
+              {user?.deptAlt || "Departments"}
             </a>
           </Link>
         </Typography>
@@ -185,12 +208,12 @@ const NavBar = () => {
 
         <div>
           <Button
-            color="secondary"
+            color="primary"
             variant="contained"
             size="small"
             onClick={() => Router.push("/add-post")}
           >
-            post Issue
+            Create
           </Button>
         </div>
         <Typography variant="subtitle1">

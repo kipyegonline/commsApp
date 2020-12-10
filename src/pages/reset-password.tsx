@@ -13,29 +13,47 @@ import {
   FormControl,
   Typography,
   FormHelperText,
+  Snackbar,
+  CircularProgress,
 } from "@material-ui/core";
+import Alert from "@material-ui/lab/Alert";
 
 function ResetPassword() {
   const [text, setText] = React.useState("");
   const [errormsg, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
+  const [spinner, setSpinner] = React.useState(false);
 
   const handleReset = () => {
     if (!text) setError("Enter email to reset password");
 
     if (text.trim().length > 8 && text.includes("@")) {
+      setSpinner(true);
       axios
         .post("/reset-password", { email: text })
         .then((res) => {
           const { data } = res;
-          setSuccess(data.msg);
+          if (data.status === 200) {
+            setSuccess(data.msg);
+          } else {
+            setError(data.msg);
+          }
         })
-        .catch((error) => setError(error.message));
+        .catch((error) => setError(error.message))
+        .finally(() => setSpinner(false));
     } else {
       setError("Enter a valid email address");
     }
-    setTimeout(() => setError(""), 3000);
+    setTimeout(() => {
+      setError("");
+      setSuccess("");
+    }, 5000);
   };
+  const SpinnerContent = (
+    <div className="my-2 mx-auto py-2 text-center">
+      <CircularProgress size="1.5rem" color="primary" />
+    </div>
+  );
   return (
     <Container maxWidth="xs" className="bg-gray-500 w-full p-4">
       <Card className="mt-20" style={{ maxWidth: 400 }}>
@@ -62,9 +80,20 @@ function ResetPassword() {
             className="block  w-full"
             onClick={handleReset}
           >
-            Submit
+            {spinner ? "submitting" : "Submit"}
           </Button>
 
+          {spinner && SpinnerContent}
+          <Snackbar open={!!success}>
+            <Alert severity="success" variant="filled">
+              {success}
+            </Alert>
+          </Snackbar>
+          {errormsg && (
+            <Typography className="text-red-600 p-2 my-2 leading-snug">
+              {errormsg}
+            </Typography>
+          )}
           <Typography align="center">
             <Link href="/login">
               <a>Login</a>

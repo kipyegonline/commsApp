@@ -45,6 +45,7 @@ function DisplayIssues({
   const classes = useStyles();
   const handleChange = (e) => {
     if (multiple) {
+      console.log("multiple target area...array", e.target.value);
       if (!e.target.value.includes("")) {
         getIssue(e.target.value);
         setErrorInt(false);
@@ -56,14 +57,14 @@ function DisplayIssues({
       }
     }
   };
-
+  console.log("controlled Arriving issues", issue);
   return (
     <FormControl className={classes.formControl}>
       <InputLabel id="issues-at-hand">Select Issue</InputLabel>
       <Select
         labelId="issues-at-hand"
         id="issues-at-hand"
-        value={multiple ? issue.join(", ") : issue}
+        value={issue}
         variant="filled"
         error={errorInt}
         multiple={multiple}

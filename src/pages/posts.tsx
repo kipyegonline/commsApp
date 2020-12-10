@@ -41,12 +41,16 @@ function Posts() {
     axios
       .get(`/posts/${id}`)
       .then((res) => {
-        if (!res.data.length || !Array.isArray(res.data))
+        if (!Array.isArray(res.data)) {
           throw new Error("No data found");
+        } else if (!res.data.length) {
+          throw new Error("There are no posts at the moment");
+        }
+
         dispatch(postactions.addPosts(res.data));
       })
       .catch((error) => {
-        setError(`Something went wrong...${error.message}`);
+        setError(error.message);
       })
       .finally(() => {
         setLoading(false);
@@ -59,8 +63,11 @@ function Posts() {
     axios
       .get(url)
       .then((res) => {
-        if (!res?.data.length || !Array.isArray(res.data))
+        if (!res?.data.length || !Array.isArray(res.data)) {
+          dispatch(callback([]));
           throw new Error("No data found");
+        }
+
         const { data } = res;
         dispatch(callback(data));
       })
@@ -70,8 +77,6 @@ function Posts() {
         fetchTimer = setTimeout(() => {
           errormsg.length && fetchPosts(uuid);
           setError("");
-          // get everything if no search results were found
-          console.log("callbaak", errormsg.length);
         }, 5000);
       })
       .finally(() => {
@@ -80,40 +85,54 @@ function Posts() {
   };
 
   // fetch dept users affiliated with logged in user
-  const fetchDeptUsers = (dept: string | number | undefined) => {
+  const fetchDeptUsers = (
+    dept: string | number | undefined,
+    uuid: number | undefined
+  ) => {
     axios
       .get(`/posts/deptusers/${dept}/${uuid}`)
       .then((res) => {
-        if (!Array.isArray(res.data)) throw new Error("No data found");
+        if (!Array.isArray(res.data)) {
+          dispatch(useractions.addUserdept([]));
+          throw new Error("No data found");
+        }
         const { data } = res;
         dispatch(useractions.addUserdept(data));
       })
-      .catch((error) => console.error("fetch posts:", error));
+      .catch((error) => error);
     //.finally(() => console.log("finally"));
   };
 
   // fetch issues belonging to currently logged in user
-  const fetchdeptIssues = (dept: number | undefined) => {
+  const fetchdeptIssues = (
+    dept: number | undefined,
+    uuid: number | undefined
+  ) => {
     axios
       .get(`/posts/issues/${dept}/${uuid}`)
       .then((res) => {
-        if (!Array.isArray(res.data)) throw new Error("No data found");
+        if (!Array.isArray(res.data)) {
+          dispatch(issueactions.AddDeptissues([]));
+          throw new Error("No data found");
+        }
         dispatch(issueactions.AddDeptissues(res.data));
       })
-      .catch((error) => console.error("fetch posts:", error));
+      .catch((error) => error);
   };
   /** Component did something like mount or side effect, couldnt care less */
   React.useEffect(() => {
     // fetch info for logged in user
     setUserId(useAuth());
     const { uuid, userdept } = useAuth();
+    console.log("Effect Render", uuid);
     // return if the data is already there
-    if (!posts.length || !issues.length || !users.length)
+    if (!posts.length || !issues.length || !users.length) {
       Promise.all([
         fetchPosts(uuid),
-        fetchDeptUsers(userdept),
-        fetchdeptIssues(userdept),
+        fetchDeptUsers(userdept, uuid),
+        fetchdeptIssues(userdept, uuid),
       ]);
+    }
 
     /* 
     //remove on prod*/
@@ -166,7 +185,7 @@ function Posts() {
       .then((res) => console.log(res.data))
       .catch((error) => console.log("ticks", error));
   };
-
+  console.log("Posts Render", uuid);
   return (
     <Layout>
       <Grid container>
@@ -185,7 +204,11 @@ function Posts() {
 
         {posts.length ? (
           <>
-            <PostsTable posts={posts} setTicks={handleBlueTicks} />
+            <PostsTable
+              posts={posts}
+              setTicks={handleBlueTicks}
+              userId={uuid}
+            />
           </>
         ) : loading ? (
           <div className="text-center mx-auto my-4 p-4">

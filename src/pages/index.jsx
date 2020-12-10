@@ -15,7 +15,7 @@ const Home = () => {
       .then((res) => {
         dispatch(postactions.addPosts(res.data));
       })
-      .catch((error) => console.error("fetch posts:", error));
+      .catch((error) => error);
   };
   React.useEffect(() => {
     if (!useAuth()) return;

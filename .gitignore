@@ -26,6 +26,6 @@ yarn-error.log*
 
 #Server side code
 /server
-
+server
 # Cypresss
 /cypress

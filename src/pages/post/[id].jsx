@@ -41,7 +41,10 @@ const Post = () => {
   const [related, setRelated] = React.useState([]);
   const [relatedspin, setRelatedSpin] = React.useState(true);
   const [recentspin, setRecentpin] = React.useState(true);
-  let uuid, userdept;
+
+  const [userId, setUserId] = React.useState({});
+  const { uuid, userdept } = userId;
+
   const classes = useStyles();
   const dispatch = useDispatch();
   // get the clicked item from router props
@@ -75,6 +78,7 @@ const Post = () => {
       .get(`/posts/fetchcomments/${postId}/${userId}`)
       .then((res) => {
         if (!res.data.length || !Array.isArray(res.data)) {
+          dispatch(postactions.addComments([]));
           throw new Error("No payload attached");
         }
 
@@ -92,6 +96,7 @@ const Post = () => {
           if (res.data.length)
             return res.data.map((item) => ({ ...item, selected: false }));
         }
+        setRelated([]);
         throw new Error("No payload attached");
       })
       .then((res) => setRelated(res))
@@ -182,8 +187,9 @@ const Post = () => {
   };
 
   React.useEffect(() => {
-    const { uuid: id, userdept: dept } = useAuth();
-    (uuid = id), (userdept = dept);
+    setUserId(useAuth());
+    const { uuid, userdept } = useAuth();
+
     // if the post id is already on router params
     if (issue) {
       // Get clicked post since its already on redux store
@@ -216,7 +222,7 @@ const Post = () => {
   };
 
   return (
-    <Layout title={post.clientName || "Post"}>
+    <Layout title={post?.clientName || "Post"}>
       {/* first ternary */}
       {!reloading ? (
         <Grid container spacing={2} alignItems="flex-start" justify="center">
@@ -249,7 +255,11 @@ const Post = () => {
             {" "}
             {post && "issue" in post ? (
               <div>
-                <PostDetails {...post} handleResolve={handleResolve} />
+                <PostDetails
+                  {...post}
+                  uuid={uuid}
+                  handleResolve={handleResolve}
+                />
 
                 <Comments
                   comments={comments}
@@ -265,7 +275,7 @@ const Post = () => {
               </Box>
             )}
           </Grid>
-          <Grid item xs={false} md={3}>
+          <Grid item xs={12} md={3} lg={3}>
             {recentspin ? (
               <div className="text-center mx-auto my-3 p-4">
                 <CircularProgress size="3rem" color="primary" />

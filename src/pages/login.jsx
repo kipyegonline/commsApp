@@ -186,7 +186,6 @@ function Login() {
               className={classes.input}
               color="primary"
               type="submit"
-              disabled={spinner}
             >
               {spinner ? "Logging in " : "Log in"}
             </Button>

@@ -29,20 +29,15 @@ import Pagination from "@material-ui/lab/Pagination";
 import DisplayIssues, { DisplayUsers, RangeInput } from "./post";
 import { display } from "@material-ui/system";
 
-// mock auth
-const { uuid, userdept } = { uuid: 20, userdept: 5 };
-
-function PostsTable({ posts = [], setTicks = (f) => f }) {
+function PostsTable({ posts = [], setTicks = (f) => f, userId = 0 }) {
   const perpage = posts.length >= 10 ? 10 : posts.length;
   const pages = Math.ceil(posts.length / perpage);
   const [current, setCurrent] = React.useState(0);
-  const handleChange = (e, page) => {
-    setCurrent(page - 1);
-  };
 
   const start = current * perpage;
   const end = current * perpage + perpage;
-
+  const handleChange = (e, p) => setCurrent(p - 1);
+  console.log("PostTable Render", userId);
   return (
     <>
       <Counter posts={posts.length} />
@@ -91,6 +86,7 @@ function PostsTable({ posts = [], setTicks = (f) => f }) {
                 {...post}
                 setTicks={setTicks}
                 index={i}
+                userId={userId}
               />
             ))}
           </TableBody>
@@ -137,7 +133,13 @@ const TableBodyInfo = ({
   addedon = "",
   seen = "0",
   setTicks = (f) => f,
+  userId = 0,
 }) => {
+  const [uuid, setUuid] = React.useState(userId);
+  React.useEffect(() => {
+    setUuid(userId);
+    console.log("Post Table Body  Effect", uuid);
+  }, [uuid]);
   //checking status
 
   const checkStatus = (status) => {
@@ -162,6 +164,7 @@ const TableBodyInfo = ({
       shallow: false,
     });
   };
+  console.log("Post table body  Render", uuid);
   return (
     <TableRow>
       <TableCell>
@@ -190,7 +193,7 @@ const TableBodyInfo = ({
       </TableCell>
       <TableCell>{addedon}</TableCell>
       <TableCell>
-        <b>{+handler_id === uuid || adder === uuid ? "You" : addedBy} </b>
+        <b>{adder === uuid ? "You" : addedBy} </b>
       </TableCell>
       <TableCell>
         <Button
@@ -223,7 +226,6 @@ export const ToolBar = ({
   handleSearch = (f) => f,
   getDate = (f) => f,
 }) => {
-  const testu = [{ altId: "775hfrhdy6e", id: 1, username: "jules" }];
   return (
     <Grid
       container
@@ -331,7 +333,7 @@ const SearchTextField = ({ sendValue = (f) => f }) => {
 };
 const Counter = ({ posts }) => (
   <Typography>
-    {posts} {posts > 1 ? "issues" : "issue"}
+    {posts} {posts > 1 ? "issues" : post < 1 ? "" : "issue"}
   </Typography>
 );
 Counter.propTypes = { posts: PropTypes.number.isRequired };

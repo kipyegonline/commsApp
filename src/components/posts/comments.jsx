@@ -170,7 +170,7 @@ const CommentsList = ({
             {item.addedBy}
           </span>
           <p style={{ fontSize: 14, fontWeight: "normal" }}>{item.comment}</p>
-          <FormHelperText> {item.addedEn}</FormHelperText>
+          <FormHelperText>{item.addedEn}</FormHelperText>
           <EditInput
             id={item.altId}
             comment={item.comment}

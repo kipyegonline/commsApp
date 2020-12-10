@@ -22,7 +22,6 @@ import * as userdepts from "../redux/departments/actions";
 import * as issueactions from "../redux/Issues/actions";
 import FetchDepts from "../lib/api/depts";
 import CustomerForm from "../components/customerIssues/customerform";
-import { getLocal, handleLocalStorage } from "../components/helpers";
 
 const useStyles = makeStyles({
   grid: { minWidth: 300 },
@@ -72,6 +71,7 @@ function AddPost() {
   const [errormsg, setError] = React.useState("");
   const [success, setSuccess] = React.useState("");
   const [userId, setUserId] = React.useState({});
+  const [spinner, setSpinner] = React.useState(false);
 
   const { uuid, userdept } = userId;
   const form = React.useRef(null);
@@ -149,7 +149,7 @@ function AddPost() {
   };
   /* This function tracks the users selected or unselected as well as when 2 users from same department are clicked */
   const handleUser = (user) => {
-    // check if users already clicked
+    // check if there is a user from the clicked department
 
     const index = handler.findIndex((item) => item.id === user.id);
     // if so,remove from list and tell redux
@@ -203,6 +203,7 @@ function AddPost() {
 
   /* This  function (event handler)  tracks the issues being clicked; removed or added */
   const handleIssue = (incomingIssue) => {
+    console.log(incomingIssue, "incoming");
     // incoming issue is the array from select element
     // check if an issue is being added or removed
     if (incomingIssue.length > issue.length) {
@@ -213,7 +214,7 @@ function AddPost() {
 
       if (theIssue) {
         // if it exists,check if there is similar issue selected as one can only select one issue per dept per user
-        const exists = issues.some(
+        const exists = issues.find(
           (item) => item.userdept === theIssue.userdept && item.selected
         );
         if (!exists) {
@@ -221,7 +222,8 @@ function AddPost() {
           // set state
           setIssue(incomingIssue);
         } else {
-          // tell the user to select one issue per department
+          // get the index of that issue and remove it from array and redux
+
           /* eslint-disable no-alert */
           alert(
             "Cannot select 2 issues from same department, split the post into 2"
@@ -242,18 +244,16 @@ function AddPost() {
     }
   };
   /* This utility function tracks issues associated with departments, magic, should even gp outside the component */
-  const appendHandlerToIssue = (handler, issues) => {
+  const appendHandlerToIssue = (handler, issues, a) => {
     let holder = [],
       missingParts = [];
 
     handler.forEach((item) => {
-      const res = issues.find((d) => d.userdept === item.userdept);
+      const res = issues.find((d) => d.userdept === item[a] && d.selected);
       if (res) {
         const token = `${item.id}-${res.id}`;
 
         holder = [...holder, { ...item, id: token }];
-      } else {
-        missingParts = [...missingParts, item];
       }
     });
     return [holder, missingParts];
@@ -264,8 +264,6 @@ function AddPost() {
     if (clientName.value.trim().length < 6) {
       setError("Kindly add a client or company name");
     } else if (issue.length < 1) {
-      console.log("issues issues", appendHandlerToIssue(handler, issues)[1]);
-
       setError("Kindly select the nature of issue");
     } else if (subject.trim().length < 6) {
       setError("Kindly add the subject of the issue");
@@ -285,10 +283,15 @@ function AddPost() {
     ) {
       // send to server
       setError("");
-      btn.current.disabled = true;
 
-      const handlers = appendHandlerToIssue(handler, issues)[0];
-      const depts = appendHandlerToIssue(clientDept, issues)[0];
+      setSpinner(true);
+
+      const handlers = appendHandlerToIssue(handler, issues, "userdept")[0];
+      const depts = appendHandlerToIssue(clientDept, issues, "id")[0];
+      console.log(
+        "issues without users",
+        appendHandlerToIssue(handler, issues, "userdept")[1]
+      );
 
       const data = {
         clientName: clientName.value,
@@ -304,16 +307,17 @@ function AddPost() {
         altId: v4(),
         addedon: new Date().toLocaleString(),
       };
-      console.log("dara", depts, handlers, issue, data, clientDept);
+      console.log("handlers:", handlers, "\n issuue", issue);
       // Remove on prod
       // handleLocalStorage(data, "posts");
-
+      console.log("end prod", data);
       axios
         .post("/posts/addposts", { ...data })
         .then((res) => {
           console.log("res", res);
-          if (res.data.status === 200) {
-            setSuccess(res.msg);
+          const { data } = res;
+          if (data.status === 200) {
+            setSuccess(data.msg);
 
             // reset everything
             setTimeout(() => {
@@ -332,16 +336,16 @@ function AddPost() {
               setClientDept([]);
 
               form.current.reset();
-            }, 2000);
+            }, 4000);
           } else {
-            throw new Error(res.msg);
+            throw new Error(data.msg);
           }
         })
         .catch((error) => {
           console.log("BBC", error, error.statusText, error.message);
         })
         .finally(() => {
-          btn.current.disabled = false;
+          setTimeout(() => setSpinner(false), 2000);
         });
     } else {
       console.log(
@@ -358,7 +362,7 @@ function AddPost() {
       );
     }
   };
-  console.log(clientDept, clientName.value, "monday");
+
   return (
     <CustomerContext.Provider
       value={{
@@ -374,6 +378,7 @@ function AddPost() {
         handleIssue,
         setSubject,
         setMessage,
+        spinner,
         issue,
       }}
     >

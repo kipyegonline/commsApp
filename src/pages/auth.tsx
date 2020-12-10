@@ -1,6 +1,6 @@
 import React from "react";
-import { signIn, signOut, useSession } from "next-auth/client";
-
+//import { signIn, signOut, useSession } from "next-auth/client";
+/*
 export default function myComponent() {
   const [session, loading] = useSession();
   if (loading) {
@@ -30,3 +30,6 @@ export default function myComponent() {
     </>
   );
 }
+*/
+const NextAuth = () => <p>Setting up auth soon</p>;
+export default NextAuth;

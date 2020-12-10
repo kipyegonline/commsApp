@@ -6,10 +6,13 @@ import {
   TextField,
   FormHelperText,
   Button,
+  Snackbar,
+  LinearProgress,
 } from "@material-ui/core";
 import { AddCircleOutlineRounded } from "@material-ui/icons";
 import DisplayIssues from "../posts/post";
 import { useCustomerContext } from "../../pages/add-post";
+import { Alert } from "@material-ui/lab";
 
 function CustomerForm() {
   const {
@@ -25,6 +28,7 @@ function CustomerForm() {
     handleIssue,
     setSubject,
     setMessage,
+    spinner,
     issue,
   } = useCustomerContext();
 
@@ -108,11 +112,18 @@ function CustomerForm() {
       <FormHelperText className={errormsg ? "p -2 my-1 " : ""} error>
         {errormsg}
       </FormHelperText>
+      <Snackbar open={!!success}>
+        <Alert severity="success" variant="contained">
+          {success}
+        </Alert>
+      </Snackbar>
       <FormHelperText
         className={success ? "p -2 my-1 alert alert-success" : ""}
       >
         {success}
       </FormHelperText>
+      {/* linear progress */}
+      {spinner && <LinearProgress className="my-2 py-1 w-full" />}
       {/* submit btn */}
       <Button
         color="primary"
@@ -120,9 +131,10 @@ function CustomerForm() {
         variant="contained"
         type="submit"
         ref={btn}
+        disabled={spinner}
         startIcon={<AddCircleOutlineRounded />}
       >
-        Post Issue
+        {spinner ? "Posting issue" : "Create Issue"}
       </Button>
     </>
   );
